@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador de Posts · Natto</title>
+<style>
+@font-face { font-family: 'Inter'; src: url('fonts/Inter.ttf'); font-weight: 100 900; }
+@font-face { font-family: 'Anton'; src: url('fonts/Anton-Regular.ttf'); }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat.ttf'); font-weight: 100 900; font-style: normal; }
+@font-face { font-family: 'Montserrat'; src: url('fonts/Montserrat-Italic.ttf'); font-weight: 100 900; font-style: italic; }
+:root { --brand: #0678f5; --brand-esc: #0553b0; --ink: #111317; --muted: #6b7280; --line: #e5e7eb; --bg: #f6f7f9; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+.tit { font-weight: 900; text-transform: uppercase; letter-spacing: -0.035em; line-height: 1.02; margin: 0; }
+.sub { color: var(--muted); font-size: 16px; margin: 6px 0 0; line-height: 1.45; }
+
+header { background: #fff; border-bottom: 1px solid var(--line); }
+header .in { max-width: 1180px; margin: 0 auto; padding: 16px 18px; display: flex; align-items: center; gap: 18px; }
+header img { height: 54px; }
+header .div { width: 1px; height: 46px; background: var(--line); }
+header .tit { font-size: clamp(20px, 3.2vw, 30px); }
+header .sub { font-size: 14px; margin-top: 3px; }
+@media (max-width: 560px) { header .div { display: none; } header img { height: 44px; } header .sub { display: none; } }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 18px 70px; }
+.passos { display: flex; gap: 8px; margin-bottom: 26px; }
+.passos div { flex: 1; height: 5px; border-radius: 9px; background: var(--line); }
+.passos div.on { background: var(--brand); }
+.etapa { display: none; }
+.etapa.on { display: block; }
+.etapa > .tit { font-size: clamp(26px, 4vw, 40px); }
+
+/* boas-vindas */
+.boas { background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--brand); border-radius: 14px; padding: 18px 20px; margin-bottom: 26px; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.boas b { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+.boas p { margin: 4px 0 0; color: var(--muted); font-size: 15px; line-height: 1.45; max-width: 560px; }
+.boas ol { list-style: none; margin: 0; padding: 0; display: flex; gap: 14px; flex-wrap: wrap; }
+.boas li { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #374151; }
+.boas li span { width: 24px; height: 24px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+/* etapa 1: bandeiras */
+.bandeiras { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-top: 24px; }
+.band { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 22px 14px; cursor: pointer; text-align: center; transition: border-color .15s, transform .15s, box-shadow .15s; position: relative; overflow: hidden; }
+.band::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 5px; background: var(--c); }
+.band img { height: 52px; max-width: 100%; object-fit: contain; display: block; margin: 0 auto; }
+.band b { display: block; font-weight: 900; font-size: 21px; letter-spacing: -0.03em; text-transform: uppercase; }
+.band:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.08); }
+.band.on { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(6,120,245,.18); }
+
+/* etapa 2: dados */
+.painel { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-top: 22px; }
+.seg { display: inline-flex; background: var(--bg); border-radius: 12px; padding: 4px; gap: 4px; width: 100%; max-width: 480px; margin-bottom: 20px; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 13px 14px; border-radius: 9px; font: 800 15px 'Inter'; color: var(--muted); cursor: pointer; letter-spacing: -0.01em; }
+.seg button.on { background: var(--brand); color: #fff; }
+.campos2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+label.f { display: block; font-size: 13px; font-weight: 700; color: #374151; }
+label.f .opt { font-weight: 500; color: var(--muted); }
+input[type=text], input[type=tel], textarea { width: 100%; margin-top: 6px; padding: 12px 13px; border: 1.5px solid var(--line); border-radius: 10px; font: 500 15px 'Inter', sans-serif; color: var(--ink); background: #fff; }
+textarea { resize: vertical; min-height: 84px; line-height: 1.4; }
+input:focus, textarea:focus { outline: none; border-color: var(--brand); }
+input[type=color] { margin-top: 6px; width: 100%; height: 46px; border: 1.5px solid var(--line); border-radius: 10px; padding: 4px; background: #fff; cursor: pointer; }
+input[type=range] { width: 100%; accent-color: var(--brand); }
+.btn { border: 0; border-radius: 11px; padding: 14px 22px; font: 800 15px 'Inter'; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: -0.01em; }
+.btn.pri { background: var(--brand); color: #fff; }
+.btn.pri:hover { background: var(--brand-esc); }
+.btn.sec { background: #fff; border: 1.5px solid var(--line); color: var(--ink); }
+.btn:disabled { opacity: .55; cursor: wait; }
+.navs { display: flex; justify-content: space-between; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.err { color: #c81e1e; font-weight: 700; font-size: 14px; margin-top: 12px; }
+.hint { font-size: 12px; color: var(--muted); font-weight: 500; margin-top: 5px; line-height: 1.4; }
+.hint.warn { color: #a05a00; }
+
+/* fotos + ajuste de fundo */
+.fotos { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.foto { position: relative; width: 84px; height: 84px; border-radius: 10px; border: 1.5px dashed #c3c7cf; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; cursor: pointer; overflow: hidden;
+  background: repeating-conic-gradient(#eef0f3 0 25%, #fff 0 50%) 0 0/14px 14px; }
+.foto.sel { border: 2px solid var(--brand); }
+.foto img { max-width: 100%; max-height: 100%; }
+.foto input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.foto .troca { position: absolute; right: 3px; bottom: 3px; background: rgba(17,19,23,.75); color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 5px; pointer-events: none; }
+.ajuste { margin-top: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: #fafbfc; display: none; }
+.ajuste.on { display: block; }
+.ajuste .lin { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 700; }
+.ajuste .lin + .lin { margin-top: 10px; }
+.ajuste .lin label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.ajuste input[type=checkbox] { accent-color: var(--brand); width: 17px; height: 17px; }
+.ajuste .faixa { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-weight: 600; }
+.ajuste .link { border: 0; background: none; color: var(--brand); font: 700 13px 'Inter'; cursor: pointer; padding: 0; }
+.ajuste .grande { margin-top: 10px; height: 170px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: repeating-conic-gradient(#e6e8ec 0 25%, #fff 0 50%) 0 0/16px 16px; }
+.ajuste .grande img { max-width: 100%; max-height: 100%; }
+
+/* etapa 3: galeria */
+.resumo { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.resumo .chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: 13px; font-weight: 700; }
+.chip.marca { background: var(--ink); color: #fff; border-color: var(--ink); text-transform: uppercase; letter-spacing: -0.01em; }
+.resumo .acts { display: flex; gap: 10px; flex-wrap: wrap; }
+.gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 18px; }
+.gcard { border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform .15s, box-shadow .15s; box-shadow: 0 2px 8px rgba(0,0,0,.06); position: relative; }
+.gcard:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.14); }
+.gcard::after { content: 'Editar'; position: absolute; right: 10px; top: 10px; background: rgba(17,19,23,.82); color: #fff; font-weight: 800; font-size: 12px; padding: 6px 11px; border-radius: 8px; opacity: 0; transition: opacity .15s; }
+.gcard:hover::after { opacity: 1; }
+.pv { position: relative; width: 100%; aspect-ratio: 3/4; overflow: hidden; background: #e9ebef; }
+.pv > .post { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+
+/* editor */
+.modal { position: fixed; inset: 0; background: rgba(10,12,18,.72); z-index: 50; display: none; align-items: center; justify-content: center; padding: 16px; }
+.modal.on { display: flex; }
+.ed { background: #fff; border-radius: 18px; width: min(1080px, 100%); max-height: calc(100vh - 32px); display: grid; grid-template-columns: minmax(0, 1fr) 400px; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
+.edbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: #fff; position: sticky; top: 0; z-index: 3; }
+.edbar .voltar { border: 0; background: var(--brand); color: #fff; font: 800 15px 'Inter'; padding: 11px 18px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+.ed .lado { padding: 20px; background: #eceef2; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px; overflow: auto; }
+.seg.fmt { max-width: 260px; margin: 0; background: #fff; }
+.ed .lado .pv.story { aspect-ratio: 9/16; max-width: 340px; }
+.ed .lado .pv { max-width: 470px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+.ed .campos { padding: 20px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+.chkl { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.chkl input { accent-color: var(--brand); width: 16px; height: 16px; }
+.ed .acoes { display: flex; gap: 10px; flex-wrap: wrap; position: sticky; bottom: -20px; background: #fff; padding: 12px 0 0; margin-top: auto; }
+.ed .acoes .btn { flex: 1; }
+@media (max-width: 820px) {
+  .ed .lado .pv.story { max-width: 240px; }
+  .modal { padding: 0; align-items: stretch; }
+  .ed { grid-template-columns: 1fr; grid-template-rows: auto auto auto; overflow: auto; border-radius: 0; max-height: 100vh; }
+  .ed .lado { padding: 14px; }
+  .ed .lado .pv { max-width: 300px; }
+  .ed .campos { overflow: visible; }
+}
+
+/* rodapé */
+footer.natto { background: #0678f5; color: #eaf3ff; padding: 48px 18px 56px; }
+footer.natto .in { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: auto 1fr; gap: 36px; align-items: center; }
+footer.natto img { height: 110px; }
+footer.natto h3 { margin: 0 0 10px; color: #fff; font-size: 24px; font-weight: 900; line-height: 1.2; letter-spacing: -0.02em; }
+footer.natto p { margin: 0 0 22px; font-size: 16px; line-height: 1.6; max-width: 720px; }
+.wa { display: inline-flex; align-items: center; gap: 10px; background: #25d366; box-shadow: 0 8px 20px rgba(0,0,0,.18); color: #fff; text-decoration: none; font-weight: 800; font-size: 16px; padding: 14px 22px; border-radius: 12px; }
+.wa:hover { background: #1fb957; }
+.wa svg { width: 22px; height: 22px; }
+@media (max-width: 700px) { footer.natto .in { grid-template-columns: 1fr; gap: 20px; } footer.natto img { height: 80px; } }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(140px); background: #111317; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; transition: transform .25s; z-index: 99; }
+.toast.on { transform: translateX(-50%); }
+#stage { position: fixed; left: -20000px; top: 0; width: 1080px; height: 1920px; }
+.loading { padding: 60px 0; text-align: center; color: var(--muted); font-weight: 700; grid-column: 1 / -1; }
+</style>
+<style id="post-css">
+.post { position: relative; width: 1080px; height: 1440px; overflow: hidden; font-family: 'Montserrat', sans-serif; background: #fff; }
+.post * { margin: 0; padding: 0; box-sizing: border-box; }
+.post .bg { position: absolute; inset: 0; }
+.post .bg svg { position: absolute; left: 0; width: 100%; }
+.post .bg-noite { background: linear-gradient(180deg, #08142e 0%, #13306a 45%, #2a4f8f 62%, #101a2c 63%, #1a2232 100%); }
+.post .bg-noite .glow { position: absolute; left: -160px; top: 500px; width: 1400px; height: 500px; background: radial-gradient(ellipse at center, rgba(120,170,255,.45), transparent 65%); }
+.post .bg-noite .estrada { position: absolute; left: 0; right: 0; top: 63%; bottom: 0; background: linear-gradient(180deg, #2b3446 0%, #141a26 70%); }
+.post .bg-dia { background: linear-gradient(180deg, #ffffff 0%, #f1f2f5 40%, #e4e6ea 70%, #f4f4f6 100%); }
+.post .bg-dia .chao { position: absolute; left: 0; right: 0; top: 66%; bottom: 0; background: linear-gradient(180deg, #eceef1, #ffffff); }
+.post .logo-topo { position: absolute; top: 30px; left: 0; right: 0; display: flex; justify-content: center; z-index: 20; }
+.post .logo { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 38px; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
+.post .logo .ic { width: 46px; height: 46px; }
+.post .logo img { height: 76px; max-width: 380px; object-fit: contain; }
+.post .mega { font-weight: 900; letter-spacing: -3px; line-height: .95; color: #fff; text-shadow: 0 6px 24px rgba(0,0,0,.35); }
+.post .anton { font-family: 'Anton'; line-height: 1.02; letter-spacing: -1px; }
+.post .tag { display: inline-block; color: #fff; font-weight: 800; padding: 10px 26px 12px; border-radius: 8px; line-height: 1.1; box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.post .caixa { color: #fff; border-radius: 22px; padding: 34px 30px; font-weight: 600; font-size: 31px; line-height: 1.25; box-shadow: 0 16px 40px rgba(0,0,0,.25); }
+.post .caixa b { font-weight: 900; }
+.post .img-abs { position: absolute; object-fit: contain; }
+.post .sombra { filter: drop-shadow(0 24px 30px rgba(0,0,0,.35)); }
+.post .rodape { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; z-index: 30; }
+.post .rodape svg.onda { position: absolute; left: 0; bottom: 0; width: 100%; height: 190px; }
+.post .rodape .nome { position: absolute; left: 40px; bottom: 44px; color: #fff; font-weight: 800; font-style: italic; font-size: 36px; letter-spacing: -.5px; max-width: 330px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post .rodape .centro { position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%); }
+.post .rodape .centro .logo { font-size: 22px; color: #fff; flex-direction: column; gap: 4px; }
+.post .rodape .centro .logo .ic { width: 44px; height: 44px; }
+.post .rodape .centro .logo img { height: 60px; max-width: 220px; filter: brightness(0) invert(1); }
+.post .rodape .redes { position: absolute; right: 40px; bottom: 34px; color: #fff; font-size: 22px; font-weight: 600; line-height: 1.55; }
+.post .rodape .redes div { display: flex; align-items: center; gap: 10px; }
+.post .rodape .redes svg { width: 24px; height: 24px; }
+.post .thumb { position: absolute; border-radius: 20px; overflow: hidden; background-repeat: no-repeat; background-color: #f3f4f6; box-shadow: 0 12px 28px rgba(0,0,0,.18); border: 5px solid #fff; }
+</style>
+</head>
+<body>
+<header><div class="in">
+  <img src="assets/natto.png" alt="Natto marketing e vendas">
+  <div class="div"></div>
+  <div><h1 class="tit">Gerador de Posts</h1><p class="sub">Crie artes de alta conversão para o Instagram da sua loja.</p></div>
+</div></header>
+
+<div class="wrap">
+  <div class="passos"><div class="on"></div><div></div><div></div></div>
+
+  <!-- ETAPA 1 -->
+  <section class="etapa on" id="e1">
+    <div class="boas">
+      <div><b>Bem-vindo ao Gerador de Posts da Natto 👋</b>
+      <p>Artes prontas para o Instagram da sua loja ou do seu perfil de vendedor, no padrão da sua bandeira, em poucos minutos.</p></div>
+      <ol><li><span>1</span>Escolha a bandeira</li><li><span>2</span>Preencha seus dados</li><li><span>3</span>Ajuste e baixe (feed ou story)</li></ol>
+    </div>
+    <h2 class="tit">Qual a bandeira da sua loja?</h2>
+    <p class="sub">Escolha a marca que você vende. As artes já vêm com a logo, a cor e os modelos da marca.</p>
+    <div class="bandeiras" id="bandeiras"></div>
+  </section>
+
+  <!-- ETAPA 2 -->
+  <section class="etapa" id="e2">
+    <h2 class="tit">Agora, seus dados</h2>
+    <p class="sub">Essas informações aparecem em todas as artes. Dá para mudar depois.</p>
+    <div class="painel">
+      <div class="seg" id="modo"><button type="button" data-v="loja" class="on">Posts para loja</button><button type="button" data-v="vendedor">Posts para vendedor</button></div>
+      <div class="campos2">
+        <label class="f so-vend" style="display:none">Seu nome<input type="text" id="vNome" placeholder="Ex.: Ana"></label>
+        <label class="f">Nome da loja<input type="text" id="lNome" placeholder="Ex.: Moto Fácil"></label>
+        <label class="f">Cidade <span class="opt">(opcional)</span><input type="text" id="lCidade" placeholder="Ex.: Porto Alegre"></label>
+        <label class="f">Instagram<input type="text" id="lIg" placeholder="@sualoja"></label>
+        <label class="f">WhatsApp<input type="tel" id="lWa" placeholder="(51) 99999-0000"></label>
+        <label class="f">Cor das artes<input type="color" id="lCor" value="#d7141a"><div class="hint">Já vem com a cor da bandeira.</div></label>
+        <div><label class="f">Logo nas artes</label><div id="logoBox"></div><div class="hint" id="logoHint"></div></div>
+        <div class="so-vend" style="display:none"><label class="f">Sua foto</label><div id="vFotoBox"></div></div>
+      </div>
+      <div class="err" id="erro2"></div>
+    </div>
+    <div class="navs"><button class="btn sec" data-ir="1">← Trocar bandeira</button><button class="btn pri" id="verArtes">Ver minhas artes →</button></div>
+  </section>
+
+  <!-- ETAPA 3 -->
+  <section class="etapa" id="e3">
+    <div class="resumo">
+      <div><h2 class="tit" style="font-size:clamp(24px,3.6vw,36px)">Escolha uma arte</h2><p class="sub">Toque na arte que quiser, ajuste se precisar e baixe no formato feed ou story.</p></div>
+      <div class="acts"><button class="btn sec" data-ir="2">Editar dados</button></div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="gal" id="gal"></div>
+  </section>
+</div>
+
+<footer class="natto"><div class="in">
+  <img src="assets/natto-branco.png" alt="Natto marketing e vendas">
+  <div>
+    <h3>Assessoria de marketing e vendas para concessionárias de motos</h3>
+    <p>Somos uma assessoria especializada em geração de demanda e estruturação de processos comerciais. Nossa metodologia consiste em estruturar seu funil de vendas — fale conosco para fazer um diagnóstico gratuito!</p>
+    <a class="wa" target="_blank" rel="noopener" href="https://api.whatsapp.com/send/?phone=5551999196684&amp;text=Ol%C3%A1%2C+vim+pelo+gerador+de+posts+e+gostaria+de+vender+mais+motos&amp;type=phone_number&amp;app_absent=0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.6 5 5.2l1.2-1.2-1.8-1-1 .7c-1-.5-1.8-1.3-2.2-2.2l.7-1-1-1.8z" fill="#fff" stroke="none"/></svg>Quero meu diagnóstico gratuito</a>
+  </div>
+</div></footer>
+
+<div class="modal" id="modal"><div class="ed">
+  <div class="edbar"><button class="voltar" id="voltar">← Voltar para as artes</button></div>
+  <div class="lado"><div class="seg fmt" id="formato"><button type="button" data-f="feed" class="on">Feed</button><button type="button" data-f="story">Story</button></div><div class="pv" id="edPv"></div></div>
+  <div class="campos" id="edCampos"></div>
+</div></div>
+
+<div id="stage"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ======================= utilidades ======================= */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const rich = (s) => esc(s).replace(/\*(.+?)\*/g, '<b>$1</b>');
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2600); }
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const t = f < 0 ? 0 : 255, p = Math.abs(f);
+  r = Math.round((t - r) * p + r); g = Math.round((t - g) * p + g); b = Math.round((t - b) * p + b);
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+function rng(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+
+/* ======================= processamento de imagem ======================= */
+function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+function fileToDataURL(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+
+// carrega, reduz para no máx. 1500px e (opcional) remove fundo liso por preenchimento a partir das bordas
+async function prepararImagem(file, { removerFundo = true, max = 1500, tol = 30, maxFrac = 0.93 } = {}) {
+  const img = await loadImg(typeof file === 'string' ? file : await fileToDataURL(file));
+  const k = Math.min(1, max / Math.max(img.width, img.height));
+  const w = Math.round(img.width * k), h = Math.round(img.height * k);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const ctx = c.getContext('2d', { willReadFrequently: true }); ctx.drawImage(img, 0, 0, w, h);
+  const original = typeof file === 'string' ? file : c.toDataURL('image/png');
+  const id = ctx.getImageData(0, 0, w, h), px = id.data;
+  let status = 'ok';
+  // já tem transparência? então mantém
+  let transp = 0; for (let i = 3; i < px.length; i += 4 * 7) if (px[i] < 200) transp++;
+  if (transp > (w * h / 7) * 0.02) status = 'transparente';
+  else if (removerFundo) {
+    const mask = new Uint8Array(w * h), q = new Int32Array(w * h); let qh = 0, qt = 0;
+    const TOL = tol * tol, NTOL = Math.max(10, tol * 0.5) ** 2;
+    const seed = (x, y) => { const i = y * w + x; if (!mask[i]) { mask[i] = 1; q[qt++] = i; } };
+    // cor de referência = pixel de borda que iniciou o preenchimento; guardamos por pixel
+    const ref = new Int32Array(w * h);
+    const push = (x, y) => { const i = y * w + x; ref[i] = i; seed(x, y); };
+    for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+    for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+    while (qh < qt) {
+      const i = q[qh++], x = i % w, y = (i / w) | 0, r0 = ref[i] * 4;
+      const nb = [x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1];
+      for (const j of nb) {
+        if (j < 0 || mask[j]) continue;
+        const a = j * 4, dr = px[a] - px[r0], dg = px[a + 1] - px[r0 + 1], db = px[a + 2] - px[r0 + 2];
+        // também compara com o vizinho (gradientes suaves de fundo)
+        const b4 = i * 4, er = px[a] - px[b4], eg = px[a + 1] - px[b4 + 1], eb = px[a + 2] - px[b4 + 2];
+        if (dr * dr + dg * dg + db * db < TOL && er * er + eg * eg + eb * eb < NTOL) { mask[j] = 1; ref[j] = ref[i]; q[qt++] = j; }
+      }
+    }
+    // limpeza de borda: remove "restos" de fundo colados no contorno (até 3 px)
+    let br = 0, bgc = 0, bb = 0, nb0 = 0;
+    for (let x = 0; x < w; x += 3) for (const y of [0, h - 1]) { const a = (y * w + x) * 4; br += px[a]; bgc += px[a + 1]; bb += px[a + 2]; nb0++; }
+    br /= nb0; bgc /= nb0; bb /= nb0;
+    for (let pass = 0; pass < 2; pass++) {
+      const add = [];
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x; if (mask[i]) continue;
+        if (!(mask[i - 1] || mask[i + 1] || mask[i - w] || mask[i + w])) continue;
+        const a = i * 4, dr = px[a] - br, dg = px[a + 1] - bgc, db = px[a + 2] - bb;
+        if (dr * dr + dg * dg + db * db < (tol * 0.9) ** 2) add.push(i);
+      }
+      add.forEach((i) => (mask[i] = 1)); qt += add.length;
+    }
+    const frac = qt / (w * h);
+    if (frac < 0.04 || frac > maxFrac) status = 'fundo-complexo';
+    else {
+      for (let i = 0; i < w * h; i++) if (mask[i]) px[i * 4 + 3] = 0;
+      // suaviza a borda: pixels opacos vizinhos de transparentes ficam semitransparentes
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x; if (mask[i]) continue;
+        if (mask[i - 1] || mask[i + 1] || mask[i - w] || mask[i + w]) px[i * 4 + 3] = 150;
+      }
+      ctx.putImageData(id, 0, 0); status = 'removido';
+    }
+  }
+  // recorta no conteúdo
+  const d2 = ctx.getImageData(0, 0, w, h).data; let x0 = w, y0 = h, x1 = 0, y1 = 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d2[(y * w + x) * 4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  let out = c;
+  if (x1 > x0 && y1 > y0 && (x1 - x0 + 1 < w || y1 - y0 + 1 < h)) {
+    out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
+    out.getContext('2d').drawImage(c, -x0, -y0);
+  }
+  return { url: out.toDataURL('image/png'), status, cor: corDominante(out), original };
+}
+
+// cor de destaque da moto (para o título do post "lançamento")
+function corDominante(canvas) {
+  const s = document.createElement('canvas'), W = 80, H = Math.max(1, Math.round(80 * canvas.height / canvas.width));
+  s.width = W; s.height = H; const x = s.getContext('2d'); x.drawImage(canvas, 0, 0, W, H);
+  const d = x.getImageData(0, 0, W, H).data, bins = Array.from({ length: 24 }, () => ({ n: 0, r: 0, g: 0, b: 0 }));
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 200) continue;
+    const r = d[i] / 255, g = d[i + 1] / 255, b = d[i + 2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), sat = mx ? (mx - mn) / mx : 0;
+    if (sat < .35 || mx < .25) continue;
+    let hh = 0; if (mx === r) hh = ((g - b) / (mx - mn)) % 6; else if (mx === g) hh = (b - r) / (mx - mn) + 2; else hh = (r - g) / (mx - mn) + 4;
+    const k = Math.floor(((hh * 60 + 360) % 360) / 15), bn = bins[k], wgt = sat * sat;
+    bn.n += wgt; bn.r += d[i] * wgt; bn.g += d[i + 1] * wgt; bn.b += d[i + 2] * wgt;
+  }
+  const best = bins.reduce((a, b) => (b.n > a.n ? b : a));
+  if (best.n < 3) return null;
+  let r = best.r / best.n, g = best.g / best.n, b = best.b / best.n;
+  const L = (0.299 * r + 0.587 * g + 0.114 * b); if (L > 120) { const f = 120 / L; r *= f; g *= f; b *= f; }
+  return '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+}
+
+/* ======================= templates ======================= */
+function skyline(variant, seed = 7, base = 0.63) {
+  const r = rng(seed), W = 1080, H = 1440, by = Math.round(H * base);
+  let rects = '', wins = '';
+  const layers = variant === 'noite'
+    ? [{ c: '#1b3a72', o: .9, min: 180, max: 520 }, { c: '#0c1a38', o: 1, min: 120, max: 430 }]
+    : [{ c: '#d5d9e0', o: .55, min: 200, max: 560 }, { c: '#c4c9d2', o: .55, min: 120, max: 420 }];
+  layers.forEach((L, li) => {
+    let x = -20;
+    while (x < W) {
+      const w = 50 + r() * 110, h = L.min + r() * (L.max - L.min);
+      rects += `<rect x="${x.toFixed(0)}" y="${(by - h).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" fill="${L.c}" opacity="${L.o}"/>`;
+      if (r() > .7) rects += `<rect x="${(x + w / 2 - 3).toFixed(0)}" y="${(by - h - 60).toFixed(0)}" width="6" height="60" fill="${L.c}" opacity="${L.o}"/>`;
+      if (variant === 'noite' && li === 1) {
+        for (let wy = by - h + 18; wy < by - 14; wy += 26)
+          for (let wx = x + 10; wx < x + w - 14; wx += 20)
+            if (r() > .55) wins += `<rect x="${wx.toFixed(0)}" y="${wy.toFixed(0)}" width="8" height="12" fill="#ffd98a" opacity="${(.35 + r() * .6).toFixed(2)}"/>`;
+      }
+      x += w + (r() * 12);
+    }
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" style="top:0;height:100%" preserveAspectRatio="none">${rects}${wins}</svg>`;
+}
+function fundo(tipo, seed) {
+  if (tipo === 'noite') return `<div class="bg bg-noite"><div class="glow"></div>${skyline('noite', seed)}<div class="estrada"></div></div>`;
+  return `<div class="bg bg-dia">${skyline('dia', seed, .62)}<div class="chao"></div></div>`;
+}
+const ICONE_LOGO = `<svg class="ic" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="5"/><circle cx="24" cy="24" r="6" fill="currentColor"/><path d="M24 3v12M24 33v12M3 24h12M33 24h12" stroke="currentColor" stroke-width="4"/></svg>`;
+function logo(d, cor) {
+  if (d.loja.logo) {
+    const branco = cor === '#fff' && d.loja.logoBranco;
+    const placa = cor !== '#fff' && d.loja.logoClaro ? 'background:#111317;padding:8px 22px;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.2);margin-top:-14px' : '';
+    return `<div class="logo" style="${placa}"><img src="${branco ? d.loja.logoBranco : d.loja.logo}" style="${branco ? 'filter:none' : ''}${placa ? ';height:52px' : ''}"/></div>`;
+  }
+  return `<div class="logo" style="color:${cor}">${ICONE_LOGO}<span>${esc(d.loja.nome)}</span></div>`;
+}
+const IG = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff"/></svg>`;
+const WA = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.6 5 5.2l1.2-1.2-1.8-1-1 .7c-1-.5-1.8-1.3-2.2-2.2l.7-1-1-1.8z" fill="#fff" stroke="none"/></svg>`;
+function rodape(d) {
+  const C = d.loja.cor, CE = shade(C, -.32);
+  const nome = d.modo === 'vendedor' && d.vendedor.nome ? d.vendedor.nome : d.loja.nome;
+  return `<div class="rodape">
+    <svg class="onda" viewBox="0 0 1080 190" preserveAspectRatio="none">
+      <defs><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C}"/><stop offset="1" stop-color="${CE}"/></linearGradient></defs>
+      <path d="M0,62 C260,18 420,40 540,62 C680,86 860,30 1080,48 L1080,190 L0,190 Z" fill="url(#gr)"/>
+    </svg>
+    <div class="nome">${esc(nome)}</div>
+    <div class="centro">${logo(d, '#fff')}</div>
+    <div class="redes"><div>${IG}${esc(d.loja.instagram)}</div><div>${WA}${esc(d.loja.whatsapp)}</div></div>
+  </div>`;
+}
+function thumb(src, zoom, px, py, x, y, w, h) {
+  return `<div class="thumb" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background-image:url('${src}');background-size:${zoom ? zoom * 100 + '% auto' : 'contain'};background-position:${px}% ${py}%"></div>`;
+}
+const DETALHES = [[2.2, 72, 30], [2.2, 38, 42], [2.0, 55, 88], [2.0, 15, 70]];
+function detalhes(m, n, x, y0, step, w, h) { return Array.from({ length: n }, (_, i) => thumb(m.foto, DETALHES[i][0], DETALHES[i][1], DETALHES[i][2], x, y0 + i * step, w, h)).join(''); }
+function wrap(d, inner) { return `<div class="post">${inner}${rodape(d)}</div>`; }
+const tag = (d, txt, fs, cor) => `<span class="tag" style="font-size:${fs}px;background:${cor || d.loja.cor}">${esc(txt)}</span>`;
+const caixa = (d) => `background:linear-gradient(160deg,${d.loja.cor},${shade(d.loja.cor, -.32)})`;
+const pessoa = (d, style) => d.vendedor.foto ? `<img class="img-abs sombra" src="${d.vendedor.foto}" style="${style}"/>` : '';
+const moto = (d, p) => d.motos[p.moto ?? 0] || d.motos[0];
+
+const TEMPLATES = {
+  oferta(d, p) {
+    const m = moto(d, p), temP = !!d.vendedor.foto;
+    return wrap(d, `${fundo('noite', p.seed || 3)}
+      <div class="logo-topo">${logo(d, '#fff')}</div>
+      <div style="position:absolute;left:56px;right:56px;top:140px;z-index:10">
+        <div class="mega" data-fit="968" style="font-size:200px;white-space:nowrap">${esc(p.titulo)}</div>
+        <div style="text-align:right;margin-top:18px">${tag(d, p.subtitulo, 52)}</div>
+      </div>
+      ${m ? `<img class="img-abs sombra" src="${m.foto}" style="${temP ? 'right:-30px;bottom:150px;width:820px;height:760px;object-position:right bottom' : 'left:40px;right:40px;bottom:160px;width:1000px;height:820px;object-position:center bottom'}"/>` : ''}
+      ${pessoa(d, 'left:-20px;bottom:140px;height:800px;max-width:620px;object-position:left bottom;z-index:5')}`);
+  },
+  brinde(d, p) {
+    const m = moto(d, p), temP = !!d.vendedor.foto;
+    const pill = (txt) => `<div style="display:flex;align-items:center;margin:14px 0">
+        <div style="width:112px;height:112px;border-radius:50%;background:#fff;border:6px solid ${d.loja.cor};display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 8px 20px rgba(0,0,0,.3)"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="${d.loja.cor}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+        <span class="tag" style="font-size:58px;margin-left:-26px;padding-left:44px;background:${d.loja.cor}">${esc(txt)}</span></div>`;
+    const br = (p.brindes || []).slice(0, 3);
+    return wrap(d, `${fundo('noite', p.seed || 11)}
+      <div class="logo-topo">${logo(d, '#fff')}</div>
+      <div style="position:absolute;left:56px;top:160px;width:660px;z-index:10;color:#fff">
+        ${tag(d, p.chamada || 'Compre agora a sua', 46)}
+        <div class="mega" data-fit="660" style="font-size:170px;margin-top:26px;white-space:nowrap">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:64px;margin:8px 0 ${br.length > 2 ? 10 : 30}px">e ganhe:</div>
+        ${br.map((b, i) => (i ? '<div style="font-weight:900;font-size:70px;margin:-6px 0 -6px 24px;line-height:1">+</div>' : '') + pill(b)).join('')}
+        <div style="font-weight:700;font-size:32px;margin-top:36px;opacity:.95">${esc(p.rodape_texto || 'Promoção por tempo limitado.')}</div>
+      </div>
+      ${m ? `<img class="img-abs sombra" src="${m.foto}" style="${temP ? 'right:-150px;top:250px;width:640px;height:600px;object-position:right center' : 'right:30px;top:600px;width:640px;height:680px;object-position:right bottom'}"/>` : ''}
+      ${pessoa(d, 'right:-30px;bottom:140px;height:660px;max-width:520px;object-position:right bottom;z-index:5')}`);
+  },
+  catalogo(d, p) {
+    const ms = d.motos.slice(0, 4), temP = !!d.vendedor.foto;
+    const pos = ms.length === 3 ? ['right:300px;top:330px;width:420px;height:380px', 'right:-20px;top:300px;width:420px;height:400px', 'right:170px;top:680px;width:600px;height:480px']
+      : ms.length >= 4 ? [
+      'right:300px;top:330px;width:420px;height:380px', 'right:-20px;top:300px;width:420px;height:400px',
+      'right:250px;top:700px;width:470px;height:430px', 'right:-40px;top:720px;width:440px;height:420px',
+    ] : ['right:220px;top:380px;width:560px;height:480px', 'right:-30px;top:660px;width:600px;height:520px'];
+    return wrap(d, `${fundo('dia', p.seed || 5)}
+      <svg style="position:absolute;left:0;bottom:120px;width:1080px;height:560px" viewBox="0 0 1080 560" preserveAspectRatio="none"><path d="M0,560 L0,420 C300,330 700,230 1080,150 L1080,560 Z" fill="${d.loja.cor}"/></svg>
+      <div class="logo-topo">${logo(d, d.loja.cor)}</div>
+      <div class="anton" data-fit="980" style="position:absolute;left:0;right:0;top:120px;text-align:center;font-size:150px;color:#151515;white-space:nowrap">${esc(p.titulo || 'Nosso Catálogo')}</div>
+      <div class="caixa" style="position:absolute;left:50px;top:330px;width:380px;z-index:6;${caixa(d)}">${rich(p.texto)}</div>
+      ${ms.map((m, i) => `<img class="img-abs sombra" src="${m.foto}" style="${pos[i]};z-index:${i < 2 ? 2 : 3}"/>`).join('')}
+      ${temP ? pessoa(d, 'left:-10px;bottom:140px;height:640px;max-width:520px;object-position:left bottom;z-index:7') : ''}`);
+  },
+  lancamento(d, p) {
+    const m = moto(d, p), cor = m.cor || d.loja.cor;
+    return wrap(d, `${fundo('dia', p.seed || 9)}
+      <div class="logo-topo">${logo(d, d.loja.cor)}</div>
+      <div style="position:absolute;left:50px;right:50px;top:120px;z-index:10">
+        <div class="anton" data-fit="980" style="font-size:230px;color:${cor};white-space:nowrap">${esc(p.titulo || m.modelo)}</div>
+        ${p.subtitulo ? `<div style="margin-top:10px">${tag(d, p.subtitulo, 46, cor)}</div>` : ''}
+      </div>
+      ${detalhes(m, 3, 40, 540, 200, 250, 175)}
+      <img class="img-abs sombra" src="${m.foto}" style="right:30px;bottom:150px;width:800px;height:800px;object-position:right bottom;z-index:5"/>`);
+  },
+  modelo(d, p) {
+    const m = moto(d, p), temP = !!d.vendedor.foto;
+    return wrap(d, `${fundo('dia', p.seed || 13)}
+      <div class="logo-topo">${logo(d, d.loja.cor)}</div>
+      <div class="anton" data-fit="700" style="position:absolute;left:50px;top:120px;font-size:170px;color:#151515;white-space:nowrap;z-index:10">${esc(p.titulo || m.modelo)}</div>
+      <div class="caixa" style="position:absolute;left:50px;top:340px;width:350px;font-size:29px;z-index:6;${caixa(d)}">${rich(p.texto)}</div>
+      ${detalhes(m, 3, 790, 120, 185, 250, 165)}
+      <img class="img-abs sombra" src="${m.foto}" style="${temP ? 'right:-30px;bottom:150px;width:760px;height:700px' : 'right:-30px;bottom:150px;width:960px;height:740px'};object-position:right bottom;z-index:5"/>
+      ${pessoa(d, 'left:-10px;bottom:140px;height:640px;max-width:480px;object-position:left bottom;z-index:7')}`);
+  },
+  galeria(d, p) {
+    const m = moto(d, p), src = m.foto;
+    return wrap(d, `${fundo('dia', p.seed || 17)}
+      <div class="logo-topo">${logo(d, d.loja.cor)}</div>
+      ${thumb(src, 1.9, 75, 30, 40, 130, 640, 560)}
+      ${thumb(src, 2.2, 38, 42, 700, 130, 340, 270)}
+      ${thumb(src, 2.0, 55, 88, 700, 420, 340, 270)}
+      ${thumb(src, 0, 50, 50, 40, 715, 1000, 420)}
+      <div style="position:absolute;left:0;right:0;bottom:130px;height:150px;background:linear-gradient(180deg,${d.loja.cor},${shade(d.loja.cor, -.32)});z-index:8;display:flex;align-items:center;justify-content:center">
+        <div class="anton" data-fit="980" style="font-size:120px;color:#fff;white-space:nowrap">${esc(p.titulo || m.modelo)}</div>
+      </div>`);
+  },
+};
+
+function fitAll(root) {
+  const sc = root.getBoundingClientRect().width / 1080 || 1;
+  root.querySelectorAll('[data-fit]').forEach((el) => {
+    const max = +el.dataset.fit; let fs = parseFloat(getComputedStyle(el).fontSize);
+    const w = () => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().width / sc; };
+    while (w() > max && fs > 20) { fs -= 4; el.style.fontSize = fs + 'px'; }
+  });
+}
+
+
+/* ======================= exportação (HTML -> SVG -> PNG/JPG) ======================= */
+let fontCSSPromise = null;
+async function fontCSS() {
+  if (!fontCSSPromise) fontCSSPromise = (async () => {
+    const files = [['Anton', 'fonts/Anton-Regular.ttf', 'normal'], ['Montserrat', 'fonts/Montserrat.ttf', 'normal'], ['Montserrat', 'fonts/Montserrat-Italic.ttf', 'italic']];
+    let css = '';
+    for (const [fam, url, style] of files) {
+      try {
+        const buf = await (await fetch(url)).arrayBuffer();
+        let bin = ''; const u8 = new Uint8Array(buf); for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+        css += `@font-face{font-family:'${fam}';src:url(data:font/ttf;base64,${btoa(bin)});font-weight:100 900;font-style:${style};}`;
+      } catch (e) { console.warn('fonte', url, e); }
+    }
+    return css;
+  })();
+  return fontCSSPromise;
+}
+// formato: 'feed' (1080x1440) ou 'story' (1080x1920, com áreas seguras do Instagram em cima e embaixo)
+const TOPO_ESCURO = ['oferta', 'preco', 'brinde'];
+function htmlFormato(d, p, formato = 'feed') {
+  if (p.template.startsWith('u_')) return TEMPLATES[p.template](d, p, LAY(formato === 'story'));
+  const feed = TEMPLATES[p.template](d, p);
+  if (formato !== 'story') return feed;
+  let topo = p.template === 'whatsapp' ? shade(d.loja.cor, .06) : TOPO_ESCURO.includes(p.template) ? '#08142e' : '#ffffff', base = shade(d.loja.cor, -.32);
+  if (typeof STORY_CORES !== 'undefined' && STORY_CORES[p.template]) [topo, base] = STORY_CORES[p.template](d);
+  return `<div class="post" style="height:1920px;background:${topo}">
+    <div style="position:absolute;left:0;top:240px;width:1080px;height:1440px">${feed}</div>
+    <div style="position:absolute;left:0;right:0;top:1676px;bottom:0;background:${base}"></div></div>`;
+}
+async function renderPost(d, p, formato = 'feed') {
+  const H = formato === 'story' ? 1920 : 1440;
+  const stage = $('#stage'); stage.style.height = H + 'px';
+  stage.innerHTML = htmlFormato(d, p, formato);
+  const el = stage.firstElementChild;
+  await Promise.all([...el.querySelectorAll('img')].map((i) => i.decode().catch(() => {})));
+  await document.fonts.ready;
+  fitAll(el);
+  const html = new XMLSerializer().serializeToString(el);
+  const css = (await fontCSS()) + $('#post-css').textContent;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="${H}"><foreignObject x="0" y="0" width="1080" height="${H}"><div xmlns="http://www.w3.org/1999/xhtml"><style>${css}</style>${html}</div></foreignObject></svg>`;
+  const img = await loadImg('data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg));
+  const c = document.createElement('canvas'); c.width = 1080; c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0); await sleep(60); ctx.clearRect(0, 0, 1080, H); ctx.drawImage(img, 0, 0); // 2ª passada (Safari)
+  return await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.92));
+}
+
+
+/* ======================= templates novos ======================= */
+const WA_BIG = (cor) => `<svg viewBox="0 0 24 24" width="78" height="78" fill="none" stroke="${cor}" stroke-width="2"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.6 5 5.2l1.2-1.2-1.8-1-1 .7c-1-.5-1.8-1.3-2.2-2.2l.7-1-1-1.8z" fill="${cor}" stroke="none"/></svg>`;
+Object.assign(TEMPLATES, {
+  // Preço / parcela em destaque (loja)
+  preco(d, p) {
+    const m = moto(d, p);
+    const [int, cent] = String(p.valor || '').split(',');
+    return wrap(d, `${fundo('noite', p.seed || 7)}
+      <div class="logo-topo">${logo(d, '#fff')}</div>
+      <div class="anton" data-fit="980" style="position:absolute;left:50px;top:125px;font-size:170px;color:#fff;white-space:nowrap;z-index:10;text-shadow:0 6px 24px rgba(0,0,0,.35)">${esc(p.titulo || m.modelo)}</div>
+      <img class="img-abs sombra" src="${m.foto}" style="left:300px;right:20px;top:330px;width:760px;height:700px;object-position:right bottom;z-index:4"/>
+      <div style="position:absolute;left:50px;top:560px;z-index:10;color:#fff">
+        ${tag(d, p.rotulo || 'Parcelas a partir de', 40)}
+        <div style="display:flex;align-items:flex-start;margin-top:14px;font-weight:900;line-height:.85;text-shadow:0 8px 30px rgba(0,0,0,.45)">
+          <span style="font-size:70px;margin-top:22px;margin-right:8px">R$</span>
+          <span style="font-size:250px;letter-spacing:-10px">${esc(int)}</span>
+          ${cent ? `<span style="font-size:80px;margin-top:22px">,${esc(cent)}</span>` : ''}
+        </div>
+        <div style="font-weight:800;font-size:46px;margin-top:6px">${esc(p.complemento || '/mês')}</div>
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:170px;text-align:center;z-index:10">
+        <span style="display:inline-block;background:#fff;color:#151515;font-weight:800;font-size:38px;padding:16px 34px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.35)">${esc(p.detalhe || '')}</span>
+      </div>`);
+  },
+
+  // Conteúdo de autoridade: dica em lista (loja)
+  dica(d, p) {
+    const m = moto(d, p), itens = (p.itens || []).filter(Boolean).slice(0, 4);
+    return wrap(d, `${fundo('dia', p.seed || 19)}
+      <div class="logo-topo">${logo(d, d.loja.cor)}</div>
+      <div style="position:absolute;left:56px;right:56px;top:135px;z-index:10">
+        ${tag(d, p.chamada || 'Dica da semana', 40)}
+        <div class="anton" style="font-size:${esc(p.titulo).length > 30 ? 96 : 118}px;color:#151515;margin:18px 0 34px;line-height:1.02">${esc(p.titulo)}</div>
+      <div style="width:760px;display:flex;flex-direction:column;gap:${itens.length > 3 ? 18 : 24}px">
+        ${itens.map((t, i) => `<div style="display:flex;align-items:center;gap:24px;background:#fff;border-radius:22px;padding:22px 26px;box-shadow:0 12px 30px rgba(0,0,0,.12)">
+          <div class="anton" style="flex:0 0 86px;height:86px;border-radius:50%;background:${d.loja.cor};color:#fff;font-size:54px;display:flex;align-items:center;justify-content:center">${i + 1}</div>
+          <div style="font-weight:700;font-size:38px;line-height:1.15;color:#1b1b1b">${esc(t)}</div></div>`).join('')}
+      </div></div>
+      ${m ? `<img class="img-abs" src="${m.foto}" style="right:-120px;bottom:150px;width:560px;height:520px;object-position:right bottom;opacity:.95;z-index:2"/>` : ''}`);
+  },
+
+  // Chamada para o WhatsApp (loja e vendedor)
+  whatsapp(d, p) {
+    const m = moto(d, p), C = d.loja.cor, CE = shade(C, -.38), temP = !!d.vendedor.foto;
+    return wrap(d, `<div class="bg" style="background:linear-gradient(165deg, ${shade(C, .06)} 0%, ${C} 45%, ${CE} 100%)"></div>
+      <div class="bg" style="opacity:.18">${skyline('dia', p.seed || 29, .7)}</div>
+      <div style="position:absolute;left:-200px;top:820px;width:1600px;height:240px;background:rgba(255,255,255,.08);transform:rotate(-12deg)"></div>
+      <div class="logo-topo">${logo(d, '#fff')}</div>
+      <div style="position:absolute;left:56px;right:56px;top:150px;z-index:10;color:#fff">
+        <div class="mega" data-fit="968" style="font-size:180px;white-space:nowrap">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:52px;margin-top:16px">${esc(p.subtitulo)}</div>
+        <div style="display:inline-flex;align-items:center;gap:22px;background:#fff;color:${CE};border-radius:999px;padding:20px 44px 20px 26px;margin-top:40px;font-weight:900;font-size:66px;box-shadow:0 16px 40px rgba(0,0,0,.3)">${WA_BIG(CE)}${esc(d.loja.whatsapp)}</div>
+      </div>
+      ${m ? `<img class="img-abs sombra" src="${m.foto}" style="${temP ? 'right:-60px;bottom:150px;width:700px;height:620px' : 'right:-40px;bottom:150px;width:900px;height:680px'};object-position:right bottom;z-index:4"/>` : ''}
+      ${pessoa(d, 'left:-10px;bottom:140px;height:760px;max-width:560px;object-position:left bottom;z-index:6')}`);
+  },
+
+  // Apresentação do vendedor
+  apresentacao(d, p) {
+    const m = moto(d, p);
+    return wrap(d, `${fundo('dia', p.seed || 23)}
+      <div class="logo-topo">${logo(d, d.loja.cor)}</div>
+      ${pessoa(d, 'right:-30px;bottom:140px;height:1060px;max-width:640px;object-position:right bottom;z-index:5')}
+      <div style="position:absolute;left:56px;top:150px;width:600px;z-index:10">
+        ${tag(d, p.chamada || 'Prazer!', 44)}
+        <div class="anton" style="font-size:150px;color:#151515;margin-top:16px;line-height:1">${esc(p.titulo)}</div>
+        <div style="font-weight:700;font-size:40px;color:#3a3a3a;margin-top:18px;line-height:1.2">${esc(p.subtitulo)}</div>
+        <div class="caixa" style="margin-top:36px;width:520px;${caixa(d)}">${rich(p.texto)}</div>
+      </div>
+      ${m ? `<img class="img-abs sombra" src="${m.foto}" style="left:20px;bottom:150px;width:520px;height:420px;object-position:left bottom;z-index:6"/>` : ''}`);
+  },
+});
+
+/* ======================= templates por bandeira ======================= */
+// referências: fundo reconstruído + posição original da moto/pessoa
+const refBg = (d, fallback) => (d.ref ? `<div class="bg" style="background:url('${d.ref.bg}') center/cover"></div>` : fallback);
+const caixaStyle = ([x, y, w, h], extra = '') => `left:${x}px;top:${y}px;width:${w}px;height:${h}px;object-position:center bottom;${extra}`;
+const refMoto = (d, fallback) => (d.ref && d.ref.caixa ? imgM(d.motos[0], caixaStyle(d.ref.caixa, 'z-index:4')) : fallback);
+const refPessoa = (d, fallback) => {
+  if (!(d.ref && d.ref.pessoa)) return fallback;
+  const [x, y, w, h] = d.ref.pessoa;
+  return pessoa(d, `left:${x - 30}px;bottom:${1440 - (y + h)}px;height:${h + 20}px;width:${w + 60}px;object-position:center bottom;z-index:6`);
+};
+const semRef = (d, html) => (d.ref ? '' : html);
+// helpers
+const imgM = (m, style, extra = 'sombra') => (m && m.foto ? `<img class="img-abs ${extra}" src="${m.foto}" style="${style}"/>` : '');
+const mI = (d, i) => d.motos[i] || d.motos[i % Math.max(1, d.motos.length)];
+const nomeRod = (d) => (d.modo === 'vendedor' ? d.vendedor.nome || 'Seu Nome' : d.loja.nome);
+const logoCor = (d, h, extra = '') => (d.loja.logo ? `<img src="${d.loja.logo}" style="height:${h}px;max-width:460px;object-fit:contain;${extra}"/>` : `<div style="font-weight:900;font-size:${h * .55}px;color:${d.loja.cor}">${esc(d.loja.nome)}</div>`);
+const logoBr = (d, h, extra = '') => (d.loja.logoBranco ? `<img src="${d.loja.logoBranco}" style="height:${h}px;max-width:460px;object-fit:contain;${extra}"/>` : d.loja.logo ? `<img src="${d.loja.logo}" style="height:${h}px;max-width:460px;object-fit:contain;filter:brightness(0) invert(1);${extra}"/>` : `<div style="font-weight:900;font-size:${h * .55}px;color:#fff">${esc(d.loja.nome)}</div>`);
+const fotoLivre = (d, style) => d.extra?.foto
+  ? `<div style="${style};background:url('${d.extra.foto}') center/cover"></div>`
+  : `<div style="${style};background:linear-gradient(160deg,#d9dce1,#b9bec7);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:40px;gap:16px"><svg width="110" height="110" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>FOTO DA ENTREGA</div>`;
+const IC_WA = (c, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.3 2 2.5 4.6 5 5.2l1.2-1.2-1.8-1-1 .7c-1-.5-1.8-1.3-2.2-2.2l.7-1-1-1.8z" fill="${c}" stroke="none"/></svg>`;
+const IC_IG = (c, s = 30) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="${c}"/></svg>`;
+const ANTON_IT = 'font-family:Anton;font-style:normal;transform:skewX(-9deg);line-height:.92;letter-spacing:0';
+const post = (inner, bg = '#fff') => `<div class="post" style="background:${bg}">${inner}</div>`;
+function blocoContato(d, cor, corFraca) {
+  return `<div style="display:flex;align-items:center;gap:12px">${IC_WA(cor, 40)}<div style="line-height:1.05"><div style="font-size:20px;font-weight:600;color:${corFraca}">Me chama agora:</div><div style="font-size:33px;font-weight:900;color:${cor}">${esc(d.loja.whatsapp)}</div></div></div>
+    <div style="display:flex;align-items:center;gap:12px">${IC_IG(cor, 40)}<div style="line-height:1.05"><div style="font-size:20px;font-weight:600;color:${corFraca}">Me acompanhe:</div><div style="font-size:30px;font-weight:900;color:${cor}">${esc(d.loja.instagram)}</div></div></div>`;
+}
+
+/* ---------- HONDA: branco/vermelho, barra vermelha arredondada no rodapé ---------- */
+function hondaFundo(d, tipo = 'claro', faixas = 'meio') {
+  const C = d.loja.cor, CE = shade(C, -.3);
+  if (tipo === 'vermelho') return `<div class="bg" style="background:radial-gradient(ellipse at 50% 35%, ${shade(C, .12)} 0%, ${C} 45%, ${CE} 100%)"></div>
+    <svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none" style="opacity:.16"><polygon points="0,0 380,0 120,1440 -260,1440" fill="#fff"/><polygon points="760,0 1080,0 1080,520 980,1440 620,1440" fill="#000"/></svg>`;
+  return `<div class="bg" style="background:linear-gradient(180deg,#ffffff 0%,#f3f3f4 55%,#e9e9eb 100%)"></div>
+    ${d.loja.logo ? `<img src="${d.loja.logo}" style="position:absolute;left:-180px;top:220px;width:760px;opacity:.06"/>` : ''}
+    <svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none">
+      <defs><linearGradient id="hl" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="${C}" stop-opacity="0"/><stop offset=".55" stop-color="${C}" stop-opacity=".9"/><stop offset="1" stop-color="${CE}"/></linearGradient><linearGradient id="hr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${C}" stop-opacity="0"/><stop offset=".55" stop-color="${C}" stop-opacity=".9"/><stop offset="1" stop-color="${CE}"/></linearGradient></defs>
+      ${faixas === 'meio' ? '<polygon points="560,560 1080,380 1080,520 640,690" fill="url(#hr)"/><polygon points="610,720 1080,560 1080,640 680,800" fill="url(#hr)" opacity=".7"/>'
+        : '<polygon points="0,420 520,620 520,700 0,520" fill="url(#hl)"/><polygon points="0,560 600,760 600,820 0,640" fill="url(#hl)" opacity=".7"/>'}</svg>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(180deg,rgba(255,255,255,0),${C}22)"></div>`;
+}
+function hondaRodape(d, escuro = false) {
+  const C = d.loja.cor, CE = shade(C, -.3);
+  const bg = escuro ? `linear-gradient(90deg,${shade(C, -.45)},${shade(C, -.25)})` : `linear-gradient(90deg,${C},${CE})`;
+  return `<div style="position:absolute;left:26px;right:26px;bottom:22px;height:112px;border-radius:20px;background:${bg};display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:30;box-shadow:0 10px 24px rgba(0,0,0,.22)">
+    <div style="font-weight:900;font-size:44px;color:#fff;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nomeRod(d))}</div>
+    ${blocoContato(d, '#fff', 'rgba(255,255,255,.85)')}</div>`;
+}
+const hondaTab = (d) => `<div style="position:absolute;left:20px;top:0;padding:14px 26px;background:${d.loja.cor};border-radius:0 0 22px 22px;z-index:20">${logoBr(d, 80)}</div>`;
+const hondaTopo = (d, branco = false) => `<div style="position:absolute;top:24px;left:0;right:0;display:flex;justify-content:center;z-index:20">${branco ? logoBr(d, 112) : logoCor(d, 112)}</div>`;
+
+Object.assign(TEMPLATES, {
+  h_especialista(d, p) {
+    const C = d.loja.cor, temP = !!d.vendedor.foto;
+    return post(`${refBg(d, hondaFundo(d))}${hondaTopo(d)}
+      <div style="position:absolute;right:50px;top:170px;width:${temP ? 560 : 980}px;text-align:${temP ? 'center' : 'center'};z-index:10">
+        <div data-fit="${temP ? 560 : 980}" style="font-weight:900;font-size:112px;color:${C};letter-spacing:-3px;white-space:nowrap;line-height:1">${esc(p.titulo)}</div>
+        <div style="font-weight:600;font-size:46px;color:#222;margin-top:6px">${esc(p.subtitulo)}</div></div>
+      ${refMoto(d, imgM(mI(d, 1), `right:${temP ? 240 : 420}px;top:360px;width:420px;height:420px;z-index:2`) + imgM(mI(d, 0), `right:-30px;top:${temP ? 420 : 380}px;width:${temP ? 560 : 700}px;height:${temP ? 560 : 680}px;z-index:3`))}
+      ${refPessoa(d, pessoa(d, 'left:-30px;bottom:140px;height:1020px;max-width:620px;object-position:left bottom;z-index:5'))}
+      <div style="position:absolute;left:0;right:0;bottom:170px;text-align:center;z-index:12">
+        <span style="display:inline-block;background:${C};color:#fff;font-weight:900;font-size:58px;padding:6px 26px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.2)">${esc(p.linha1)}</span><br>
+        <span style="display:inline-block;background:#fff;color:${C};font-weight:900;font-size:58px;padding:2px 26px 8px;border-radius:10px;margin-top:-4px;box-shadow:0 8px 20px rgba(0,0,0,.15)">${esc(p.linha2)}</span></div>
+      ${hondaRodape(d)}`);
+  },
+  h_modelo(d, p) {
+    const C = d.loja.cor, m = mI(d, 0);
+    return post(`${refBg(d, hondaFundo(d, 'claro', 'esq'))}${hondaTopo(d)}
+      <div style="position:absolute;right:50px;top:170px;width:640px;text-align:right;z-index:10">
+        <div data-fit="640" style="font-weight:900;font-size:150px;color:#161616;letter-spacing:-5px;white-space:nowrap;line-height:1">${esc(p.titulo)}</div>
+        <div style="font-weight:900;font-size:46px;color:${C};letter-spacing:1px;text-transform:uppercase;margin-top:4px">${esc(p.subtitulo)}</div>
+        <div style="font-weight:500;font-size:36px;color:#333;line-height:1.3;margin:34px 0 0 auto;width:440px">${esc(p.texto)}</div></div>
+      ${refMoto(d, imgM(m, 'left:-70px;top:400px;width:840px;height:860px;object-position:left bottom;z-index:4'))}
+      ${semRef(d, thumb(m.foto, 2.4, 60, 30, 740, 870, 300, 260))}
+      ${hondaRodape(d)}`);
+  },
+  h_sonho(d, p) {
+    const moldura = d.ref ? 'left:190px;right:180px;top:185px;height:840px' : 'left:170px;right:170px;top:140px;height:820px';
+    return post(`${refBg(d, hondaFundo(d, 'vermelho'))}${hondaTopo(d, true)}
+      ${fotoLivre(d, `position:absolute;${moldura};border-radius:44px;border:14px solid #fff;box-shadow:0 30px 60px rgba(0,0,0,.35);z-index:4`)}
+      <div style="position:absolute;left:0;right:0;top:${d.ref ? 990 : 920}px;text-align:center;z-index:10;color:#fff">
+        <span style="display:inline-block;background:${shade(d.loja.cor, -.35)};font-weight:900;font-size:50px;padding:8px 30px;border-radius:10px;letter-spacing:1px">${esc(p.linha1)}</span>
+        <div data-fit="1000" style="font-weight:900;font-size:150px;letter-spacing:-4px;line-height:1;white-space:nowrap;text-shadow:0 8px 30px rgba(0,0,0,.35);margin-top:6px">${esc(p.titulo)}</div>
+        <div style="font-weight:600;font-size:44px;margin-top:10px">${esc(p.subtitulo)}</div></div>
+      ${hondaRodape(d, true)}`);
+  },
+  h_celular(d, p) {
+    const C = d.loja.cor;
+    const textos = `<div data-fit="520" style="font-weight:900;font-size:68px;white-space:nowrap;letter-spacing:-1px">${esc(p.titulo)}</div>
+            <div style="font-weight:600;font-size:38px;margin-top:6px">${esc(p.subtitulo)}</div>`;
+    if (d.ref) return post(`${refBg(d, '')}${hondaTopo(d, true)}
+      <div style="position:absolute;left:250px;width:580px;top:395px;text-align:center;color:#fff;z-index:5;text-shadow:0 4px 14px rgba(0,0,0,.4)">${textos}</div>
+      ${refMoto(d, '')}${hondaRodape(d)}`);
+    return post(`<div class="bg" style="background:linear-gradient(180deg,#f7f7f8,#dfe1e5)"></div><div class="bg" style="opacity:.8">${skyline('dia', 41, .7)}</div>
+      <div style="position:absolute;left:330px;width:420px;top:0;bottom:0;background:linear-gradient(180deg,${C},${shade(C, -.25)})"></div>
+      ${hondaTopo(d, true)}
+      <div style="position:absolute;left:250px;width:580px;top:150px;height:1020px;border-radius:78px;background:#0f1013;padding:18px;box-shadow:0 40px 70px rgba(0,0,0,.4);z-index:3">
+        <div style="width:100%;height:100%;border-radius:62px;overflow:hidden;position:relative;background:linear-gradient(180deg,#2b2d33,#5a5d66 55%,#c9ccd3)">
+          <div style="position:absolute;left:50%;top:18px;width:150px;height:38px;border-radius:30px;background:#0f1013;transform:translateX(-50%)"></div>
+          <div style="position:absolute;left:0;right:0;top:110px;text-align:center;color:#fff">
+            <div style="display:flex;justify-content:center;margin-bottom:26px">${logoBr(d, 44)}</div>${textos}</div></div></div>
+      ${imgM(mI(d, 0), 'left:30px;right:30px;bottom:150px;width:1020px;height:620px;object-position:center bottom;z-index:6')}
+      ${hondaRodape(d)}`);
+  },
+  h_nome(d, p) {
+    const C = d.loja.cor;
+    return post(`${refBg(d, hondaFundo(d))}${hondaTopo(d)}
+      <div style="position:absolute;left:90px;right:90px;top:175px;text-align:center;z-index:10;font-weight:600;font-size:40px;color:#1d1d1d;line-height:1.25">${rich(p.texto).replace(/<b>/g, `<b style="color:${C}">`)}</div>
+      ${semRef(d, `<svg style="position:absolute;left:0;top:640px;width:1080px;height:520px" viewBox="0 0 1080 520" preserveAspectRatio="none"><polygon points="0,140 1080,0 1080,380 0,520" fill="${C}"/></svg>`)}
+      <div data-fit="1040" style="position:absolute;left:0;right:0;top:${d.ref ? 390 : 330}px;text-align:center;font-weight:900;font-size:440px;color:${C};letter-spacing:-18px;line-height:1;white-space:nowrap;z-index:2">${esc(p.titulo)}</div>
+      ${refMoto(d, imgM(mI(d, 0), 'left:110px;right:110px;top:470px;width:860px;height:790px;object-position:center bottom;z-index:5'))}
+      ${hondaRodape(d)}`);
+  },
+  h_consorcio1(d, p) {
+    const C = d.loja.cor, temP = !!d.vendedor.foto;
+    return post(`${refBg(d, `<div class="bg" style="background:linear-gradient(180deg,#fff 0%,#f1f1f2 50%)"></div>
+      <svg style="position:absolute;left:0;top:640px;width:1080px;height:800px" viewBox="0 0 1080 800" preserveAspectRatio="none"><polygon points="0,120 1080,0 1080,800 0,800" fill="${C}"/><polygon points="0,120 1080,0 1080,30 0,150" fill="${shade(C, -.3)}"/></svg>`)}${d.ref ? hondaTab(d) : hondaTopo(d)}
+      ${refMoto(d, imgM(mI(d, 1), 'left:-20px;top:150px;width:520px;height:470px;z-index:2') + imgM(mI(d, 2), 'left:330px;top:160px;width:430px;height:420px;z-index:3') + imgM(mI(d, 0), 'right:-30px;top:170px;width:460px;height:470px;z-index:4'))}
+      <div style="position:absolute;left:${d.ref ? 20 : 50}px;top:${d.ref ? 720 : 800}px;width:${temP ? 600 : 980}px;color:#fff;z-index:10;text-transform:uppercase">
+        <div style="font-weight:500;font-size:74px;line-height:1;letter-spacing:-2px">${rich(p.titulo).replace(/<b>/g, '<b style="font-weight:900">')}</div>
+        <div style="font-weight:600;font-size:34px;margin-top:30px;display:flex;align-items:center;gap:14px">${esc(p.subtitulo)} <svg width="64" height="40" viewBox="0 0 64 40" fill="none" stroke="#fff" stroke-width="4"><rect x="2" y="2" width="60" height="36" rx="18"/><path d="M20 20h24M36 12l8 8-8 8"/></svg></div></div>
+      ${refPessoa(d, pessoa(d, 'right:-30px;bottom:140px;height:820px;max-width:470px;object-position:right bottom;z-index:6'))}
+      ${hondaRodape(d)}`, '#fff');
+  },
+  h_consorcio2(d, p) {
+    const itens = (p.itens || []).slice(0, 3);
+    return post(`${refBg(d, hondaFundo(d, 'vermelho'))}${d.ref ? hondaTab(d) : ''}
+      <div style="position:absolute;left:${d.ref ? 30 : 50}px;top:${d.ref ? 140 : 50}px;width:${d.ref ? 260 : 300}px;height:${d.ref ? 200 : 230}px;background:#fff;border-radius:26px;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 14px 30px rgba(0,0,0,.25)">${logoCor(d, 170)}</div>
+      ${refMoto(d, imgM(mI(d, 1), 'left:370px;top:40px;width:380px;height:300px;z-index:3') + imgM(mI(d, 0), 'right:-20px;top:30px;width:400px;height:330px;z-index:4'))}
+      <div style="position:absolute;left:${d.ref ? 30 : 50}px;right:${d.ref ? 30 : 50}px;top:${d.ref ? 430 : 400}px;color:#fff;z-index:10">
+        <div style="font-weight:500;font-size:58px;text-transform:uppercase;letter-spacing:-1px;line-height:1.05">${rich(p.titulo).replace(/<b>/g, '<b style="font-weight:900">')}</div>
+        <div style="margin-top:44px;display:flex;flex-direction:column;gap:34px">${itens.map((t, i) => `<div style="display:flex;gap:30px;align-items:flex-start"><div style="font-weight:900;font-size:120px;line-height:.8;width:70px">${i + 1}</div><div style="font-weight:500;font-size:40px;line-height:1.25">${esc(t)}</div></div>`).join('')}</div></div>
+      ${hondaRodape(d, true)}`);
+  },
+  h_card(d, p) {
+    const C = d.loja.cor, temP = !!d.vendedor.foto;
+    return post(`${refBg(d, `<div class="bg" style="background:radial-gradient(ellipse at 40% 40%,#ffffff,#e6e7ea 70%)"></div><div class="bg" style="opacity:.5">${skyline('dia', 59, .55)}</div>
+      <div style="position:absolute;left:0;right:0;top:0;height:110px;background:linear-gradient(180deg,${C}33,transparent)"></div>`)}${hondaTab(d)}
+      <div data-fit="600" style="position:absolute;left:${d.ref ? 20 : 50}px;top:${d.ref ? 230 : 300}px;font-weight:900;font-size:96px;color:${C};letter-spacing:-3px;white-space:nowrap;z-index:10">${esc(p.titulo)}</div>
+      <div style="position:absolute;right:${d.ref ? 30 : 0}px;top:${d.ref ? 110 : 170}px;width:${d.ref ? 360 : 340}px;padding:34px 34px 38px;background:linear-gradient(160deg,${C},${shade(C, -.3)});color:#fff;font-weight:600;font-size:46px;line-height:1.05;text-transform:uppercase;font-style:italic;letter-spacing:-1px;z-index:10;border-radius:22px 0 0 22px">${rich(p.texto).replace(/<b>/g, '<b style="font-weight:900">')}</div>
+      ${refMoto(d, imgM(mI(d, 0), `left:${temP ? -30 : 60}px;bottom:150px;width:${temP ? 760 : 960}px;height:${temP ? 760 : 820}px;object-position:left bottom;z-index:5`))}
+      ${refPessoa(d, pessoa(d, 'right:-30px;bottom:140px;height:780px;max-width:440px;object-position:right bottom;z-index:6'))}
+      ${hondaRodape(d)}`);
+  },
+});
+
+/* ---------- YAMAHA: barra azul no topo com "Revs your heart", rodapé branco ---------- */
+function yamahaFundo(d, tipo) {
+  const C = d.loja.cor, CE = shade(C, -.45), CC = shade(C, .25);
+  const riscos = (seed, cor, op) => { const r = rng(seed); let s = ''; for (let i = 0; i < 26; i++) { const y = r() * 1440, x = r() * 1080, l = 200 + r() * 700, w = 1 + r() * 5; s += `<line x1="${x}" y1="${y}" x2="${x + l}" y2="${y - l * .35}" stroke="${cor}" stroke-width="${w.toFixed(1)}" opacity="${(op * (.3 + r() * .7)).toFixed(2)}" stroke-linecap="round"/>`; } return `<svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none">${s}</svg>`; };
+  if (tipo === 'azul') return `<div class="bg" style="background:radial-gradient(ellipse at 60% 40%, ${CC} 0%, ${C} 40%, ${CE} 100%)"></div>${riscos(5, '#9fd0ff', .5)}`;
+  if (tipo === 'pista') return `<div class="bg" style="background:linear-gradient(160deg,#04070f 0%,${CE} 40%,${C} 75%,#7fc3ff 100%)"></div>${riscos(9, '#bfe3ff', .7)}`;
+  if (tipo === 'cidade') return `<div class="bg" style="background:linear-gradient(180deg,#6fa8dc 0%,#bcd8ef 45%,#e8eef4 62%,#3a3f48 63%,#1d2128 100%)"></div><div class="bg" style="opacity:.55">${skyline('dia', 77, .63)}</div>`;
+  return `<div class="bg" style="background:linear-gradient(180deg,#ffffff 0%,#eef2f8 60%,#dfe6f1 100%)"></div><div class="bg" style="opacity:.45">${skyline('dia', 63, .5)}</div>`;
+}
+function yamahaTopo(d) {
+  return `<div style="position:absolute;left:0;right:0;top:0;height:124px;background:linear-gradient(90deg,${shade(d.loja.cor, -.4)},${d.loja.cor} 50%,${shade(d.loja.cor, -.4)});display:flex;align-items:center;justify-content:center;gap:26px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.25)">
+    ${logoBr(d, 58)}<span style="font-family:Montserrat;font-style:italic;font-weight:700;font-size:34px;color:#fff;letter-spacing:-.5px">${esc(d.loja.slogan || 'Revs your Heart')}</span></div>`;
+}
+function yamahaRodape(d) {
+  const C = shade(d.loja.cor, -.15);
+  return `<div style="position:absolute;left:0;right:0;bottom:0;height:126px;background:#fff;border-top:6px solid ${d.loja.cor};display:flex;align-items:center;justify-content:space-between;padding:0 36px;z-index:30">
+    <div style="font-weight:900;font-size:42px;color:${C};max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nomeRod(d))}</div>${blocoContato(d, C, '#5b6b86')}</div>`;
+}
+const azulTexto = (d) => shade(d.loja.cor, -.1);
+
+Object.assign(TEMPLATES, {
+  y_especialista(d, p) {
+    const temP = !!d.vendedor.foto, chips = (p.itens || []).slice(0, 3);
+    return post(`${refBg(d, yamahaFundo(d, 'azul'))}${yamahaTopo(d)}
+      ${d.ref ? '' : imgM(mI(d, 0), `left:${temP ? 160 : 380}px;top:${temP ? 420 : 380}px;width:${temP ? 640 : 760}px;height:${temP ? 560 : 760}px;opacity:${temP ? .35 : 1};z-index:2`, temP ? '' : 'sombra')}
+      <div style="position:absolute;left:50px;top:170px;z-index:10;color:#fff">
+        <div data-fit="640" style="${ANTON_IT};font-size:132px;white-space:nowrap;text-shadow:0 8px 24px rgba(0,0,0,.35)">${esc(p.titulo)}</div>
+        <div data-fit="640" style="${ANTON_IT};font-size:132px;white-space:nowrap;text-shadow:0 8px 24px rgba(0,0,0,.35)">${esc(p.subtitulo)}</div>
+        <div style="margin-top:40px;display:flex;flex-direction:column;gap:18px;align-items:flex-start">${chips.map((t) => `<div style="${ANTON_IT};font-size:64px;background:${shade(d.loja.cor, -.5)};border-left:10px solid #fff;padding:10px 26px 12px 20px;box-shadow:0 10px 24px rgba(0,0,0,.3)">${esc(t)}</div>`).join('')}</div></div>
+      <div style="position:absolute;left:50px;bottom:170px;width:${temP ? 500 : 640}px;font-weight:800;font-style:italic;font-size:38px;line-height:1.15;color:#fff;text-transform:uppercase;z-index:10">${esc(p.texto)}</div>
+      ${refPessoa(d, pessoa(d, 'right:-40px;bottom:126px;height:1000px;max-width:560px;object-position:right bottom;z-index:6'))}
+      ${yamahaRodape(d)}`);
+  },
+  y_nova(d, p) {
+    return post(`${refBg(d, yamahaFundo(d, 'claro') + `<div style="position:absolute;left:0;right:0;top:760px;bottom:0;background:linear-gradient(180deg,${shade(d.loja.cor, -.5)},#05070d)"></div>`)}${yamahaTopo(d)}
+      <div style="position:absolute;left:50px;right:50px;top:160px;font-weight:600;font-size:36px;color:#1b1f2a;z-index:10;line-height:1.2">${rich(p.texto).replace(/<b>/g, `<b style="font-weight:900;color:${azulTexto(d)}">`)}</div>
+      <div data-fit="1180" style="position:absolute;left:30px;top:290px;${ANTON_IT};font-size:340px;color:${d.loja.cor};white-space:nowrap;z-index:2;opacity:.95">${esc(p.titulo)}</div>
+      ${refMoto(d, imgM(mI(d, 0), 'left:20px;right:20px;top:330px;width:1040px;height:840px;object-position:center bottom;z-index:5'))}
+      ${yamahaRodape(d)}`);
+  },
+  y_destaque(d, p) {
+    const temP = !!d.vendedor.foto, m = mI(d, 0), C = azulTexto(d);
+    return post(`${refBg(d, yamahaFundo(d, 'claro'))}${yamahaTopo(d)}
+      <div style="position:absolute;left:50px;top:160px;z-index:10;width:700px">
+        <div data-fit="700" style="${ANTON_IT};font-size:150px;color:${C};white-space:nowrap">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:46px;color:${C};letter-spacing:6px;text-transform:uppercase;margin-top:6px">${esc(p.subtitulo)}</div>
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:6px">${(p.itens || []).slice(0, 3).map((t) => `<div style="font-weight:600;font-size:32px;color:#4a5568;letter-spacing:4px;text-transform:uppercase">${esc(t)}</div>`).join('')}</div></div>
+      ${semRef(d, [0, 1, 2].map((i) => thumb(m.foto, DETALHES[i][0], DETALHES[i][1], DETALHES[i][2], 800, 150 + i * 180, 240, 165)).join(''))}
+      ${refMoto(d, imgM(m, `left:-40px;bottom:126px;width:${temP ? 760 : 1000}px;height:${temP ? 680 : 760}px;object-position:left bottom;z-index:5`))}
+      ${refPessoa(d, pessoa(d, 'right:-30px;bottom:126px;height:760px;max-width:420px;object-position:right bottom;z-index:6'))}
+      ${yamahaRodape(d)}`);
+  },
+  y_gigante(d, p) {
+    return post(`${refBg(d, yamahaFundo(d, 'cidade'))}${yamahaTopo(d)}
+      ${refMoto(d, imgM(mI(d, 0), 'left:60px;right:60px;top:150px;width:960px;height:760px;object-position:center bottom;z-index:4'))}
+      <div data-fit="1000" style="position:absolute;left:0;right:0;top:880px;text-align:center;${ANTON_IT};font-size:250px;color:#fff;white-space:nowrap;text-shadow:0 12px 34px rgba(0,0,0,.55);z-index:6">${esc(p.titulo)}</div>
+      <div style="position:absolute;left:70px;right:70px;top:1150px;text-align:center;font-weight:700;font-size:32px;letter-spacing:3px;color:#fff;text-transform:uppercase;line-height:1.3;z-index:6">${esc(p.texto)}</div>
+      ${yamahaRodape(d)}`);
+  },
+  y_esportiva(d, p) {
+    return post(`${refBg(d, yamahaFundo(d, 'pista'))}${yamahaTopo(d)}
+      <div data-fit="640" style="position:absolute;left:60px;top:170px;${ANTON_IT};font-size:210px;color:#fff;white-space:nowrap;-webkit-text-stroke:4px ${shade(d.loja.cor, .3)};text-shadow:0 0 40px ${shade(d.loja.cor, .4)};z-index:10">${esc(p.titulo)}</div>
+      <div style="position:absolute;left:66px;top:420px;width:420px;font-weight:700;font-size:36px;letter-spacing:4px;color:#dff0ff;text-transform:uppercase;line-height:1.3;z-index:10">${esc(p.texto)}</div>
+      ${refMoto(d, imgM(mI(d, 0), 'right:-70px;bottom:126px;width:920px;height:900px;object-position:right bottom;z-index:5'))}
+      ${yamahaRodape(d)}`);
+  },
+});
+
+/* ---------- AVELLOZ: céu + estrada, laranja e azul-marinho, rodapé com bloco laranja ---------- */
+const AV_NAVY = '#0f2a5f';
+function avellozFundo(d, seed = 3, horizonte = 0.58) {
+  const r = rng(seed); let nuvens = '';
+  for (let i = 0; i < 9; i++) { const x = r() * 1080, y = 120 + r() * 520, w = 220 + r() * 380; nuvens += `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w * .22}" fill="#fff" opacity="${(.35 + r() * .45).toFixed(2)}"/>`; }
+  const H = Math.round(1440 * horizonte);
+  return `<div class="bg" style="background:linear-gradient(180deg,#1f5fae 0%,#5d9ad6 35%,#b9d6ee ${horizonte * 100 - 4}%,#eef2f2 ${horizonte * 100}%)"></div>
+    <svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none"><defs><filter id="bl"><feGaussianBlur stdDeviation="26"/></filter></defs><g filter="url(#bl)">${nuvens}</g>
+      <path d="M0,${H - 40} C180,${H - 120} 330,${H - 70} 460,${H - 100} C640,${H - 150} 820,${H - 60} 1080,${H - 110} L1080,${H + 20} L0,${H + 20}Z" fill="#5f7d6a" opacity=".75"/>
+      <path d="M0,${H} L1080,${H} L1080,1440 L0,1440Z" fill="#c9b48d"/>
+      <polygon points="470,${H} 610,${H} 1180,1440 -100,1440" fill="#3c3f45"/>
+      ${[0, 1, 2, 3, 4].map((i) => { const t0 = .08 + i * .2, t1 = t0 + .1, y0 = H + (1440 - H) * t0, y1 = H + (1440 - H) * t1, w0 = 4 + 30 * t0, w1 = 4 + 30 * t1; return `<polygon points="${540 - w0 / 2},${y0} ${540 + w0 / 2},${y0} ${540 + w1 / 2},${y1} ${540 - w1 / 2},${y1}" fill="#f2c230"/>`; }).join('')}
+    </svg>`;
+}
+function avellozRodape(d) {
+  const end = [d.loja.nome, d.loja.cidade].filter(Boolean).join(' · ');
+  return `<div style="position:absolute;left:0;right:0;bottom:0;height:150px;background:${AV_NAVY};z-index:30">
+    <div style="position:absolute;left:34px;top:34px;display:flex;gap:28px;align-items:center;color:#fff;font-weight:700;font-size:28px">
+      <span style="display:flex;align-items:center;gap:10px">${IC_WA('#fff', 32)}${esc(d.loja.whatsapp)}</span><span style="display:flex;align-items:center;gap:10px">${IC_IG('#fff', 32)}${esc(d.loja.instagram)}</span></div>
+    <div style="position:absolute;left:34px;top:90px;color:${d.loja.cor};font-weight:700;font-size:26px;max-width:600px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.modo === 'vendedor' && d.vendedor.nome ? d.vendedor.nome + ' · ' + end : end)}</div>
+    <div style="position:absolute;right:0;top:-18px;bottom:0;width:390px;background:${d.loja.cor};clip-path:polygon(16% 0,100% 0,100% 100%,0 100%);display:flex;align-items:center;justify-content:center;padding-left:50px">${logoBr(d, 92)}</div></div>`;
+}
+const avTopo = (d) => `<div style="position:absolute;top:22px;left:0;right:0;display:flex;justify-content:center;z-index:20;filter:drop-shadow(0 4px 12px rgba(0,0,0,.25))">${logoBr(d, 120)}</div>`;
+
+Object.assign(TEMPLATES, {
+  a_sonho(d, p) {
+    const C = d.loja.cor;
+    return post(`${refBg(d, avellozFundo(d, 3))}${avTopo(d)}
+      ${semRef(d, `<svg style="position:absolute;left:0;top:300px;width:1080px;height:700px;z-index:2" viewBox="0 0 1080 700" preserveAspectRatio="none"><path d="M120,640 C380,520 620,300 1080,120 L1080,520 C760,600 480,690 120,700Z" fill="${C}"/></svg>`)}
+      ${refMoto(d, imgM(mI(d, 0), 'right:-90px;top:300px;width:830px;height:880px;object-position:right bottom;z-index:4'))}
+      <div style="position:absolute;left:50px;top:190px;z-index:6;color:#fff">
+        <div style="font-weight:700;font-size:66px;letter-spacing:-1px;text-shadow:0 4px 18px rgba(0,0,0,.45)">${esc(p.chamada)}</div>
+        <div style="${ANTON_IT};font-size:250px;margin-top:10px;text-shadow:0 10px 30px rgba(0,0,0,.35)">${esc(p.titulo).replace(' ', '<br>')}</div></div>
+      <div style="position:absolute;left:50px;bottom:200px;font-weight:900;font-style:italic;font-size:48px;color:#fff;z-index:6;text-shadow:0 4px 14px rgba(0,0,0,.4)">${esc(p.subtitulo)}</div>
+      ${avellozRodape(d)}`);
+  },
+  a_parcelas(d, p) {
+    const C = d.loja.cor;
+    return post(`${refBg(d, avellozFundo(d, 11, .52))}
+      <div style="position:absolute;left:10px;top:110px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:Anton;font-size:205px;color:${AV_NAVY};line-height:1;white-space:nowrap;z-index:2">${esc((p.vertical || 'AVELLOZ').toUpperCase())}</div>
+      <div style="position:absolute;right:60px;top:110px;display:flex;align-items:center;gap:12px;background:${AV_NAVY};color:#fff;font-weight:700;font-size:34px;padding:14px 28px;border-radius:999px;z-index:10">${esc(p.chamada)}</div>
+      <div style="position:absolute;right:60px;top:200px;font-weight:900;font-size:330px;letter-spacing:-14px;line-height:1;color:${C};z-index:10;text-shadow:0 10px 30px rgba(0,0,0,.18)">${esc(p.titulo).replace(/x$/i, `<span style="color:${AV_NAVY}">X</span>`)}</div>
+      <div style="position:absolute;right:40px;top:610px;width:470px;background:#fff;border-radius:22px;padding:28px 30px;font-weight:700;font-size:40px;line-height:1.15;color:${AV_NAVY};z-index:10;box-shadow:0 16px 40px rgba(0,0,0,.18)">${rich(p.texto).replace(/<b>/g, `<b style="color:${C};font-weight:900">`)}</div>
+      ${refMoto(d, imgM(mI(d, 0), 'left:80px;bottom:150px;width:720px;height:700px;object-position:left bottom;z-index:5'))}
+      ${avellozRodape(d)}`);
+  },
+  a_escolha(d, p) {
+    const C = d.loja.cor;
+    return post(`${refBg(d, avellozFundo(d, 7))}${avTopo(d)}
+      <div style="position:absolute;left:250px;width:580px;top:160px;background:linear-gradient(170deg,${shade(C, .1)},${C});border-radius:34px;padding:44px 40px 60px;text-align:center;z-index:3;box-shadow:0 20px 40px rgba(0,0,0,.2)">
+        <div style="font-weight:800;font-size:64px;color:#fff;line-height:1.05;letter-spacing:-1px">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:40px;color:${AV_NAVY};margin-top:20px;line-height:1.15">${esc(p.subtitulo)}</div></div>
+      ${refMoto(d, imgM(mI(d, 2), 'right:-40px;bottom:200px;width:520px;height:520px;z-index:4') + imgM(mI(d, 1), 'left:-50px;bottom:170px;width:540px;height:560px;z-index:5') + imgM(mI(d, 0), 'left:230px;bottom:140px;width:600px;height:620px;z-index:6'))}
+      ${avellozRodape(d)}`);
+  },
+  a_zero(d, p) {
+    const C = d.loja.cor;
+    return post(`${refBg(d, avellozFundo(d, 19))}${avTopo(d)}
+      <div style="position:absolute;left:50px;top:170px;z-index:10;color:#fff">
+        <div style="font-weight:800;font-size:96px;letter-spacing:-2px;line-height:1;text-shadow:0 6px 20px rgba(0,0,0,.25)">${esc(p.titulo)}</div>
+        <div style="display:inline-block;background:${C};font-weight:800;font-size:96px;letter-spacing:-2px;line-height:1;padding:4px 22px 14px;margin-top:10px">${esc(p.subtitulo)}</div></div>
+      ${refMoto(d, imgM(mI(d, 1), 'left:-60px;bottom:160px;width:640px;height:660px;object-position:left bottom;z-index:4') + imgM(mI(d, 0), 'right:-40px;bottom:150px;width:660px;height:720px;object-position:right bottom;z-index:5'))}
+      <div style="position:absolute;left:0;right:0;bottom:180px;text-align:center;z-index:8"><span style="display:inline-flex;align-items:center;gap:12px;background:rgba(15,42,95,.88);color:#fff;font-weight:700;font-size:34px;padding:14px 30px;border-radius:999px">${esc(p.selo)}</span></div>
+      ${avellozRodape(d)}`);
+  },
+  a_desempenho(d, p) {
+    return post(`${refBg(d, avellozFundo(d, 23, .62))}${avTopo(d)}
+      <div style="position:absolute;right:10px;top:200px;writing-mode:vertical-rl;font-family:Anton;font-size:280px;color:#fff;opacity:.92;line-height:1;white-space:nowrap;z-index:2">${esc(p.vertical)}</div>
+      <div style="position:absolute;left:50px;top:170px;width:620px;font-weight:800;font-size:72px;color:#fff;line-height:1.05;letter-spacing:-1px;z-index:10;text-shadow:0 6px 20px rgba(0,0,0,.3)">${esc(p.titulo)}</div>
+      ${refMoto(d, imgM(mI(d, 0), 'left:-40px;top:420px;width:980px;height:860px;object-position:left bottom;z-index:5'))}
+      ${avellozRodape(d)}`);
+  },
+  a_tempo(d, p) {
+    const C = d.loja.cor;
+    return post(`${refBg(d, avellozFundo(d, 29))}${avTopo(d)}
+      <div style="position:absolute;left:0;right:0;top:170px;text-align:center;z-index:10;color:#fff">
+        <span style="display:inline-block;background:${C};${ANTON_IT};font-size:130px;padding:6px 34px 12px">${esc(p.chamada)}</span>
+        <div data-fit="1000" style="${ANTON_IT};font-size:250px;white-space:nowrap;margin-top:-10px;text-shadow:0 10px 30px rgba(0,0,0,.35)">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-style:italic;font-size:46px;margin-top:4px">${esc(p.subtitulo)}</div></div>
+      ${refMoto(d, imgM(mI(d, 0), 'left:40px;right:40px;bottom:150px;width:1000px;height:660px;object-position:center bottom;z-index:5'))}
+      ${avellozRodape(d)}`);
+  },
+  a_queridinha(d, p) {
+    return post(`${refBg(d, avellozFundo(d, 31, .6))}${avTopo(d)}
+      <div style="position:absolute;left:60px;right:60px;top:160px;display:flex;justify-content:space-between;align-items:flex-end;color:#fff;font-weight:800;font-size:42px;border-bottom:4px solid ${d.loja.cor};padding-bottom:12px;z-index:10"><span>${esc(p.subtitulo)}</span><span>${esc(p.titulo)}</span></div>
+      <div data-fit="1000" style="position:absolute;left:0;right:0;top:250px;text-align:center;font-family:Anton;font-size:700px;line-height:1;color:#fff;white-space:nowrap;z-index:2;text-shadow:0 20px 60px rgba(0,0,0,.18)">${esc(p.titulo)}</div>
+      ${refMoto(d, imgM(mI(d, 0), 'left:40px;right:40px;bottom:150px;width:1000px;height:720px;object-position:center bottom;z-index:5'))}
+      ${avellozRodape(d)}`);
+  },
+  a_linha(d, p) {
+    return post(`${refBg(d, avellozFundo(d, 37, .55))}
+      <div style="position:absolute;right:60px;top:0;width:200px;height:230px;background:${AV_NAVY};border-radius:0 0 22px 22px;display:flex;align-items:center;justify-content:center;z-index:20">${logoBr(d, 140, 'max-width:160px')}</div>
+      <div style="position:absolute;left:50px;top:150px;z-index:10;width:680px">
+        <div data-fit="680" style="font-weight:900;font-size:130px;color:${AV_NAVY};letter-spacing:-4px;white-space:nowrap">${esc(p.titulo)}</div>
+        <div style="display:flex;gap:14px;align-items:flex-start;font-weight:700;font-size:38px;color:${AV_NAVY};margin-top:6px;line-height:1.15"><span style="flex:0 0 22px;height:22px;border-radius:50%;background:${d.loja.cor};margin-top:10px"></span>${esc(p.subtitulo)}</div></div>
+      ${refMoto(d, [0, 1, 2, 3].map((i) => imgM(d.motos[i], `left:${-60 + i * 250}px;bottom:${150 + (3 - i) * 40}px;width:560px;height:${560 - (3 - i) * 30}px;object-position:left bottom;z-index:${4 + i}`)).join(''))}
+      ${avellozRodape(d)}`);
+  },
+});
+
+// cores do topo/base no formato story (o feed fica no meio)
+const STORY_CORES = {
+  h_sonho: (d) => [shade(d.loja.cor, -.05), shade(d.loja.cor, -.3)], h_consorcio2: (d) => [shade(d.loja.cor, -.05), shade(d.loja.cor, -.3)],
+  h_especialista: () => ['#ffffff', '#efe6e6'], h_modelo: () => ['#ffffff', '#efe6e6'], h_nome: () => ['#ffffff', '#efe6e6'], h_celular: () => ['#f7f7f8', '#dfe1e5'], h_consorcio1: (d) => ['#ffffff', d.loja.cor], h_card: () => ['#e9eaed', '#e6e7ea'],
+  y_especialista: (d) => [shade(d.loja.cor, -.4), '#ffffff'], y_nova: (d) => [shade(d.loja.cor, -.4), '#ffffff'], y_destaque: (d) => [shade(d.loja.cor, -.4), '#ffffff'], y_gigante: (d) => [shade(d.loja.cor, -.4), '#ffffff'], y_esportiva: (d) => [shade(d.loja.cor, -.4), '#ffffff'],
+  a_sonho: () => ['#1f5fae', AV_NAVY], a_parcelas: () => ['#1f5fae', AV_NAVY], a_escolha: () => ['#1f5fae', AV_NAVY], a_zero: () => ['#1f5fae', AV_NAVY], a_desempenho: () => ['#1f5fae', AV_NAVY], a_tempo: () => ['#1f5fae', AV_NAVY], a_queridinha: () => ['#1f5fae', AV_NAVY], a_linha: () => ['#1f5fae', AV_NAVY],
+};
+
+/* ======================= templates unificados (todas as bandeiras, feed e story) ======================= */
+// L = layout: H (altura), st (story?), v(feed, story)
+const LAY = (story) => ({ H: story ? 1920 : 1440, st: !!story, v: (f, s) => (story ? s : f) });
+const px = (n) => Math.round(n) + 'px';
+
+/* ---------- estilo por bandeira: topo, rodapé e fonte dos títulos ---------- */
+const SK = {
+  topo: { honda: [150, 300], yamaha: [140, 280], avelloz: [160, 300], padrao: [130, 270] },
+  base: { honda: [140, 280], yamaha: [126, 250], avelloz: [150, 270], padrao: [150, 270] },
+};
+const topoY = (d, L) => L.v(...SK.topo[d.skin]);
+const baseY = (d, L) => L.v(...SK.base[d.skin]);
+// fonte de título: Honda/padrão = Montserrat pesada; Yamaha/Avelloz = Anton itálica
+const TIT = (d, extra = '') => (d.skin === 'yamaha' || d.skin === 'avelloz'
+  ? `font-family:Anton;transform:skewX(-9deg);line-height:.95;letter-spacing:0;${extra}`
+  : `font-family:Montserrat;font-weight:900;letter-spacing:-.03em;line-height:.98;${extra}`);
+
+function cabeca(d, L, tom) {
+  const escuro = tom !== 'claro';
+  if (d.skin === 'yamaha') return `<div style="position:absolute;left:0;right:0;top:0;height:${L.v(124, 250)}px;padding-top:${L.v(0, 126)}px;background:linear-gradient(90deg,${shade(d.loja.cor, -.4)},${d.loja.cor} 50%,${shade(d.loja.cor, -.4)});display:flex;align-items:center;justify-content:center;gap:26px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.25)">
+    ${logoBr(d, 58)}${d.loja.slogan ? `<span style="font-family:Montserrat;font-style:italic;font-weight:700;font-size:34px;color:#fff">${esc(d.loja.slogan)}</span>` : ''}</div>`;
+  const h = d.skin === 'honda' ? 112 : d.skin === 'avelloz' ? 118 : 84;
+  const top = d.skin === 'padrao' ? L.v(30, 160) : L.v(22, 140);
+  return `<div style="position:absolute;top:${top}px;left:0;right:0;display:flex;justify-content:center;z-index:20;${escuro ? 'filter:drop-shadow(0 4px 12px rgba(0,0,0,.25))' : ''}">${escuro ? logoBr(d, h) : logoCor(d, h)}</div>`;
+}
+function pe(d, L, tom) {
+  const C = d.loja.cor, CE = shade(C, -.32), extra = L.v(0, 120), nome = nomeRod(d);
+  if (d.skin === 'honda') {
+    const bg = tom === 'cor' ? `linear-gradient(90deg,${shade(C, -.45)},${shade(C, -.25)})` : `linear-gradient(90deg,${C},${shade(C, -.3)})`;
+    return `<div style="position:absolute;left:26px;right:26px;bottom:${22 + extra}px;height:112px;border-radius:20px;background:${bg};display:flex;align-items:center;justify-content:space-between;padding:0 30px;z-index:30;box-shadow:0 10px 24px rgba(0,0,0,.22)">
+      <div style="font-weight:900;font-size:44px;color:#fff;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nome)}</div>${blocoContato(d, '#fff', 'rgba(255,255,255,.85)')}</div>`;
+  }
+  if (d.skin === 'yamaha') {
+    const C2 = shade(C, -.15);
+    return `<div style="position:absolute;left:0;right:0;bottom:0;height:${126 + extra}px;background:#fff;border-top:6px solid ${C};z-index:30">
+      <div style="height:120px;display:flex;align-items:center;justify-content:space-between;padding:0 36px">
+      <div style="font-weight:900;font-size:42px;color:${C2};max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nome)}</div>${blocoContato(d, C2, '#5b6b86')}</div></div>`;
+  }
+  if (d.skin === 'avelloz') {
+    const end = [d.loja.nome, d.loja.cidade].filter(Boolean).join(' · '), NAVY = d.loja.cor2 || '#0f2a5f';
+    return `<div style="position:absolute;left:0;right:0;bottom:0;height:${150 + extra}px;background:${NAVY};z-index:30">
+      <div style="position:absolute;left:34px;top:34px;display:flex;gap:28px;align-items:center;color:#fff;font-weight:700;font-size:28px">
+        <span style="display:flex;align-items:center;gap:10px">${IC_WA('#fff', 32)}${esc(d.loja.whatsapp)}</span><span style="display:flex;align-items:center;gap:10px">${IC_IG('#fff', 32)}${esc(d.loja.instagram)}</span></div>
+      <div style="position:absolute;left:34px;top:90px;color:${C};font-weight:700;font-size:26px;max-width:600px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.modo === 'vendedor' && d.vendedor.nome ? d.vendedor.nome + ' · ' + end : end)}</div>
+      <div style="position:absolute;right:0;top:-18px;height:168px;width:390px;background:${C};clip-path:polygon(16% 0,100% 0,100% 100%,0 100%);display:flex;align-items:center;justify-content:center;padding-left:50px">${logoBr(d, 92)}</div></div>`;
+  }
+  // padrão: onda na cor da loja
+  return `<div style="position:absolute;left:0;right:0;bottom:0;height:${150 + extra}px;z-index:30">
+    <svg style="position:absolute;left:0;top:-40px;width:100%;height:${190 + extra}px" viewBox="0 0 1080 ${190 + extra}" preserveAspectRatio="none">
+      <defs><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C}"/><stop offset="1" stop-color="${CE}"/></linearGradient></defs>
+      <path d="M0,62 C260,18 420,40 540,62 C680,86 860,30 1080,48 L1080,${190 + extra} L0,${190 + extra} Z" fill="url(#gr)"/></svg>
+    <div style="position:absolute;left:40px;top:58px;color:#fff;font-weight:800;font-style:italic;font-size:36px;max-width:330px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(nome)}</div>
+    <div style="position:absolute;left:50%;top:38px;transform:translateX(-50%)">${logoBr(d, 64)}</div>
+    <div style="position:absolute;right:40px;top:40px;color:#fff;font-size:22px;font-weight:600;line-height:1.55"><div style="display:flex;align-items:center;gap:10px">${IC_IG('#fff', 24)}${esc(d.loja.instagram)}</div><div style="display:flex;align-items:center;gap:10px">${IC_WA('#fff', 24)}${esc(d.loja.whatsapp)}</div></div></div>`;
+}
+
+/* ---------- fundos (todos usam a cor da bandeira) ---------- */
+function fundoU(d, tipo, seed = 7) {
+  const C = d.loja.cor, CE = shade(C, -.45);
+  const riscos = (sd, cor, op) => { const r = rng(sd); let s = ''; for (let i = 0; i < 26; i++) { const y = r() * 1440, x = r() * 1080, l = 200 + r() * 700, w = 1 + r() * 5; s += `<line x1="${x.toFixed(0)}" y1="${y.toFixed(0)}" x2="${(x + l).toFixed(0)}" y2="${(y - l * .35).toFixed(0)}" stroke="${cor}" stroke-width="${w.toFixed(1)}" opacity="${(op * (.3 + r() * .7)).toFixed(2)}" stroke-linecap="round"/>`; } return `<svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none">${s}</svg>`; };
+  if (tipo === 'noite') return fundo('noite', seed);
+  if (tipo === 'ceu') return avellozFundo(d, seed, .58);
+  if (tipo === 'cor') return `<div class="bg" style="background:radial-gradient(ellipse at 50% 35%, ${shade(C, .12)} 0%, ${C} 45%, ${shade(C, -.3)} 100%)"></div>
+    <svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none" style="opacity:.14"><polygon points="0,0 380,0 120,1440 -260,1440" fill="#fff"/><polygon points="760,0 1080,0 1080,520 980,1440 620,1440" fill="#000"/></svg>`;
+  if (tipo === 'marca') return `<div class="bg" style="background:radial-gradient(ellipse at 60% 40%, ${shade(C, .25)} 0%, ${C} 40%, ${CE} 100%)"></div>${riscos(seed, '#ffffff', .35)}`;
+  if (tipo === 'cidade') return `<div class="bg" style="background:linear-gradient(180deg,#f7f7f8,#dfe1e5)"></div><div class="bg" style="opacity:.8">${skyline('dia', seed, .7)}</div>`;
+  // claro: branco/cinza + faixas na cor da marca + marca d'água da logo
+  return `<div class="bg" style="background:linear-gradient(180deg,#ffffff 0%,#f3f3f4 55%,#e9e9eb 100%)"></div>
+    <div class="bg" style="opacity:.5">${skyline('dia', seed, .58)}</div>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,rgba(255,255,255,0),${C}22)"></div>`;
+}
+const tomDe = (tipo) => (tipo === 'claro' || tipo === 'cidade' ? 'claro' : tipo === 'cor' ? 'cor' : 'escuro');
+const postU = (d, L, tipo, inner, seed) => `<div class="post" style="height:${L.H}px">${fundoU(d, tipo, seed)}${cabeca(d, L, tomDe(tipo))}${inner}${pe(d, L, tomDe(tipo))}</div>`;
+const faixas = (d, L, y) => `<svg style="position:absolute;left:0;top:${y}px;width:1080px;height:420px;z-index:1" viewBox="0 0 1080 420" preserveAspectRatio="none">
+  <defs><linearGradient id="fx" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${d.loja.cor}" stop-opacity="0"/><stop offset=".55" stop-color="${d.loja.cor}" stop-opacity=".9"/><stop offset="1" stop-color="${shade(d.loja.cor, -.3)}"/></linearGradient></defs>
+  <polygon points="560,180 1080,0 1080,140 640,310" fill="url(#fx)"/><polygon points="610,340 1080,180 1080,260 680,420" fill="url(#fx)" opacity=".7"/></svg>`;
+const tagU = (d, txt, fs, cor, txtCor = '#fff') => `<span style="display:inline-block;background:${cor || d.loja.cor};color:${txtCor};font-weight:800;font-size:${fs}px;padding:10px 26px 12px;border-radius:8px;line-height:1.1;box-shadow:0 8px 20px rgba(0,0,0,.25)">${esc(txt)}</span>`;
+const motoU = (m, x, yTop, w, h, z = 4, pos = 'center bottom') => imgM(m, `left:${px(x)};top:${px(yTop)};width:${px(w)};height:${px(h)};object-position:${pos};z-index:${z}`);
+// pessoa ancorada na base (acima do rodapé)
+const pessoaU = (d, ladoEsq, b, h, maxW, z = 6) => pessoa(d, `${ladoEsq ? 'left:-30px' : 'right:-30px'};bottom:${px(b)};height:${px(h)};max-width:${px(maxW)};object-position:${ladoEsq ? 'left' : 'right'} bottom;z-index:${z}`);
+
+Object.assign(TEMPLATES, {
+  // 1) Oferta forte (1ª parcela, conquiste, troca, financiamento…)
+  u_oferta(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, m = mI(d, 0);
+    const mh = 760 + X * .6, mb = H - b - 10;
+    return postU(d, L, 'noite', `
+      <div style="position:absolute;left:56px;right:56px;top:${t}px;z-index:10;text-align:${L.st ? 'center' : 'left'}">
+        <div data-fit="968" style="${TIT(d, 'font-size:200px;color:#fff;white-space:nowrap;text-shadow:0 6px 24px rgba(0,0,0,.35)')}">${esc(p.titulo)}</div>
+        <div style="text-align:${L.st ? 'center' : 'right'};margin-top:18px">${tagU(d, p.subtitulo, 52)}</div></div>
+      ${temP ? motoU(m, 250, mb - mh, 860, mh, 4, 'right bottom') : motoU(m, 40, mb - mh - X * .2, 1000, mh + X * .2)}
+      ${pessoaU(d, true, b - 10, 800 + X * .55, 620)}`, p.seed || 3);
+  },
+  // 2) Preço da parcela
+  u_preco(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, m = mI(d, 0);
+    const [int, cent] = String(p.valor || '').split(',');
+    return postU(d, L, 'noite', `
+      <div data-fit="980" style="position:absolute;left:50px;right:50px;top:${t - 10}px;${TIT(d, 'font-size:170px;color:#fff;white-space:nowrap;text-shadow:0 6px 24px rgba(0,0,0,.35)')};z-index:10;text-align:${L.st ? 'center' : 'left'}">${esc(p.titulo)}</div>
+      ${motoU(m, L.st ? 60 : 300, L.st ? t + 160 : t + 180, L.st ? 960 : 760, L.st ? 640 : 700, 4, L.st ? 'center bottom' : 'right bottom')}
+      <div style="position:absolute;left:50px;${L.st ? 'right:50px;text-align:center' : ''};top:${L.st ? t + 830 : t + 420}px;z-index:10;color:#fff">
+        ${tagU(d, p.rotulo || 'Parcelas a partir de', 40)}
+        <div style="display:flex;align-items:flex-start;${L.st ? 'justify-content:center;' : ''}margin-top:14px;font-weight:900;line-height:.85;text-shadow:0 8px 30px rgba(0,0,0,.45)">
+          <span style="font-size:70px;margin-top:22px;margin-right:8px">R$</span><span style="font-size:250px;letter-spacing:-10px">${esc(int)}</span>${cent ? `<span style="font-size:80px;margin-top:22px">,${esc(cent)}</span>` : ''}</div>
+        <div style="font-weight:800;font-size:46px;margin-top:6px">${esc(p.complemento || '/mês')}</div></div>
+      ${p.detalhe ? `<div style="position:absolute;left:0;right:0;bottom:${b + 30}px;text-align:center;z-index:10"><span style="display:inline-block;background:#fff;color:#151515;font-weight:800;font-size:38px;padding:16px 34px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.35)">${esc(p.detalhe)}</span></div>` : ''}`, p.seed || 7);
+  },
+  // 3) Compre e ganhe
+  u_brinde(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, m = mI(d, 0), C = d.loja.cor;
+    const br = (p.brindes || []).slice(0, 3);
+    const pill = (txt) => `<div style="display:flex;align-items:center;margin:14px 0">
+      <div style="width:112px;height:112px;border-radius:50%;background:#fff;border:6px solid ${C};display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 8px 20px rgba(0,0,0,.3)"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="${C}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+      <span style="display:inline-block;background:${C};color:#fff;font-weight:800;font-size:58px;padding:10px 26px 12px 44px;border-radius:8px;margin-left:-26px">${esc(txt)}</span></div>`;
+    return postU(d, L, 'noite', `
+      <div style="position:absolute;left:56px;top:${t + 10}px;width:${L.st ? 968 : 660}px;z-index:10;color:#fff">
+        ${tagU(d, p.chamada || 'Compre agora a sua', 46)}
+        <div data-fit="${L.st ? 968 : 660}" style="${TIT(d, 'font-size:170px;margin-top:26px;white-space:nowrap;text-shadow:0 6px 24px rgba(0,0,0,.35)')}">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:64px;margin:8px 0 ${br.length > 2 ? 10 : 30}px">e ganhe:</div>
+        ${br.map((x, i) => (i ? '<div style="font-weight:900;font-size:70px;margin:-6px 0 -6px 24px;line-height:1">+</div>' : '') + pill(x)).join('')}
+        <div style="font-weight:700;font-size:32px;margin-top:36px;opacity:.95">${esc(p.rodape_texto || 'Promoção por tempo limitado.')}</div></div>
+      ${L.st ? motoU(m, temP ? 300 : 60, H - b - 760, temP ? 800 : 960, 740) : temP ? motoU(m, 590, t + 110, 640, 600, 4, 'right center') : motoU(m, 410, H - b - 690, 640, 680, 4, 'right bottom')}
+      ${pessoaU(d, false, b - 10, 660 + X * .4, 520)}`, p.seed || 11);
+  },
+  // 4) Catálogo (até 4 motos)
+  u_catalogo(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, ms = d.motos.slice(0, 4), C = d.loja.cor;
+    const areaT = t + 190, areaB = H - b - 20, colX = temP ? 400 : 120, colW = 1080 - colX + 30;
+    const n = Math.max(1, ms.length), rows = n > 2 ? 2 : n, cols = n > 2 ? 2 : 1, cw = colW / cols, rh = (areaB - areaT) / rows;
+    return postU(d, L, 'claro', `
+      <svg style="position:absolute;left:0;bottom:${b - 30}px;width:1080px;height:${560 + X * .3}px" viewBox="0 0 1080 560" preserveAspectRatio="none"><path d="M0,560 L0,420 C300,330 700,230 1080,150 L1080,560 Z" fill="${C}"/></svg>
+      <div data-fit="980" style="position:absolute;left:0;right:0;top:${t - 20}px;text-align:center;${TIT(d, 'font-size:140px;color:#151515;white-space:nowrap')};z-index:10">${esc(p.titulo)}</div>
+      <div class="caixa" style="position:absolute;left:50px;top:${t + 170}px;width:${temP ? 360 : 340}px;z-index:8;${caixa(d)}">${rich(p.texto)}</div>
+      ${ms.map((m, i) => motoU(m, colX + (i % cols) * cw - (cols > 1 ? 40 : 0) + (temP || n > 1 ? 0 : 200), areaT + Math.floor(i / cols) * rh + (i % 2 ? 30 : 0), cw + 40, rh, 3 + i)).join('')}
+      ${pessoaU(d, true, b - 10, 640 + X * .4, 500, 9)}`, p.seed || 5);
+  },
+  // 5) Nome gigante do modelo (BIZ / AZ1)
+  u_gigante(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, C = d.loja.cor, m = mI(d, 0);
+    const yLetras = t + 190 + X * .25;
+    return postU(d, L, 'claro', `
+      <div style="position:absolute;left:90px;right:90px;top:${t + 20}px;text-align:center;z-index:10;font-weight:600;font-size:40px;color:#1d1d1d;line-height:1.25">${rich(p.texto).replace(/<b>/g, `<b style="color:${C}">`)}</div>
+      <svg style="position:absolute;left:0;top:${yLetras + 300}px;width:1080px;height:${520 + X * .4}px" viewBox="0 0 1080 520" preserveAspectRatio="none"><polygon points="0,140 1080,0 1080,380 0,520" fill="${C}"/></svg>
+      <div data-fit="1040" style="position:absolute;left:0;right:0;top:${yLetras}px;text-align:center;${TIT(d, `font-size:440px;color:${C};white-space:nowrap;letter-spacing:-.04em`)};z-index:2">${esc(p.titulo)}</div>
+      ${motoU(m, 100, H - b - 790 - X * .55, 880, 790 + X * .55, 5)}`, p.seed || 9);
+  },
+  // 6) Card do modelo (nome + caixa colorida + pessoa)
+  u_card(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, C = d.loja.cor, m = mI(d, 0);
+    return postU(d, L, 'claro', `
+      <div data-fit="600" style="position:absolute;left:50px;top:${t + 120 + X * .1}px;${TIT(d, `font-size:100px;color:${C};white-space:nowrap`)};z-index:10">${esc(p.titulo)}</div>
+      <div style="position:absolute;right:0;top:${t + 10}px;width:360px;padding:34px 34px 38px;background:linear-gradient(160deg,${C},${shade(C, -.3)});color:#fff;font-weight:600;font-size:46px;line-height:1.05;text-transform:uppercase;font-style:italic;letter-spacing:-1px;z-index:10;border-radius:22px 0 0 22px">${rich(p.texto).replace(/<b>/g, '<b style="font-weight:900">')}</div>
+      ${temP ? motoU(m, -30, H - b - 780 - X * .5, 780, 780 + X * .5, 5, 'left bottom') : motoU(m, 60, H - b - 820 - X * .6, 960, 820 + X * .6, 5)}
+      ${pessoaU(d, false, b - 10, 780 + X * .5, 460)}`, p.seed || 59);
+  },
+  // 7) Sonho realizado (foto da entrega)
+  u_sonho(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H;
+    const fh = 780 + X * .9;
+    return postU(d, L, 'cor', `
+      ${fotoLivre(d, `position:absolute;left:170px;right:170px;top:${t - 10}px;height:${fh}px;border-radius:44px;border:14px solid #fff;box-shadow:0 30px 60px rgba(0,0,0,.35);z-index:4`)}
+      <div style="position:absolute;left:0;right:0;top:${t - 10 + fh - 40}px;text-align:center;z-index:10;color:#fff">
+        <span style="display:inline-block;background:${shade(d.loja.cor, -.35)};font-weight:900;font-size:50px;padding:8px 30px;border-radius:10px;letter-spacing:1px">${esc(p.linha1)}</span>
+        <div data-fit="1000" style="${TIT(d, 'font-size:150px;white-space:nowrap;text-shadow:0 8px 30px rgba(0,0,0,.35);margin-top:6px')}">${esc(p.titulo)}</div>
+        <div style="font-weight:600;font-size:44px;margin-top:10px">${esc(p.subtitulo)}</div></div>`);
+  },
+  // 8) Chegou a hora (celular)
+  u_celular(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, C = d.loja.cor;
+    const ph = 1000 + X * .9, py = t - 10;
+    return postU(d, L, 'cidade', `
+      <div style="position:absolute;left:330px;width:420px;top:0;bottom:0;background:linear-gradient(180deg,${C},${shade(C, -.25)})"></div>
+      <div style="position:absolute;left:250px;width:580px;top:${py}px;height:${ph}px;border-radius:78px;background:#0f1013;padding:18px;box-shadow:0 40px 70px rgba(0,0,0,.4);z-index:3">
+        <div style="width:100%;height:100%;border-radius:62px;overflow:hidden;position:relative;background:linear-gradient(180deg,#2b2d33,#5a5d66 55%,#c9ccd3)">
+          <div style="position:absolute;left:50%;top:18px;width:150px;height:38px;border-radius:30px;background:#0f1013;transform:translateX(-50%)"></div>
+          <div style="position:absolute;left:0;right:0;top:110px;text-align:center;color:#fff">
+            <div data-fit="520" style="${TIT(d, 'font-size:72px;white-space:nowrap')}">${esc(p.titulo)}</div>
+            <div style="font-weight:600;font-size:38px;margin-top:10px">${esc(p.subtitulo)}</div></div></div></div>
+      ${motoU(mI(d, 0), 20, H - b - 640 - X * .3, 1040, 640 + X * .3, 6)}`, p.seed || 41);
+  },
+  // 9) Consórcio — capa
+  u_consorcio1(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, C = d.loja.cor;
+    const painel = t + 480 + X * .35;
+    return postU(d, L, 'claro', `
+      <svg style="position:absolute;left:0;top:${painel}px;width:1080px;height:${H - painel}px" viewBox="0 0 1080 800" preserveAspectRatio="none"><polygon points="0,120 1080,0 1080,800 0,800" fill="${C}"/><polygon points="0,120 1080,0 1080,30 0,150" fill="${shade(C, -.3)}"/></svg>
+      ${motoU(mI(d, 1), -20, t, 520, 470 + X * .3, 2)}${motoU(mI(d, 2), 330, t + 10, 430, 420 + X * .3, 3)}${motoU(mI(d, 0), 590, t + 20, 470, 470 + X * .3, 4)}
+      <div style="position:absolute;left:50px;top:${painel + 170}px;width:${temP ? 600 : 980}px;color:#fff;z-index:10;text-transform:uppercase">
+        <div style="font-weight:500;font-size:74px;line-height:1;letter-spacing:-2px">${rich(p.titulo).replace(/<b>/g, '<b style="font-weight:900">')}</div>
+        <div style="font-weight:600;font-size:34px;margin-top:30px;display:flex;align-items:center;gap:14px">${esc(p.subtitulo)} <svg width="64" height="40" viewBox="0 0 64 40" fill="none" stroke="#fff" stroke-width="4"><rect x="2" y="2" width="60" height="36" rx="18"/><path d="M20 20h24M36 12l8 8-8 8"/></svg></div></div>
+      ${pessoaU(d, false, b - 10, 820 + X * .4, 470)}`, p.seed || 61);
+  },
+  // 10) Consórcio — passo a passo
+  u_consorcio2(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, itens = (p.itens || []).slice(0, 3);
+    return postU(d, L, 'cor', `
+      ${motoU(mI(d, 1), 120, t - 10, 460, 300 + X * .15, 3)}${motoU(mI(d, 0), 520, t - 20, 480, 320 + X * .15, 4)}
+      <div style="position:absolute;left:50px;right:50px;top:${t + 330 + X * .2}px;color:#fff;z-index:10">
+        <div style="font-weight:500;font-size:58px;text-transform:uppercase;letter-spacing:-1px;line-height:1.05">${rich(p.titulo).replace(/<b>/g, '<b style="font-weight:900">')}</div>
+        <div style="margin-top:${44 + X * .15}px;display:flex;flex-direction:column;gap:${34 + X * .15}px">${itens.map((x, i) => `<div style="display:flex;gap:30px;align-items:flex-start"><div style="font-weight:900;font-size:120px;line-height:.8;width:70px">${i + 1}</div><div style="font-weight:500;font-size:40px;line-height:1.25">${esc(x)}</div></div>`).join('')}</div></div>`);
+  },
+  // 11) Especialista / formas de pagamento
+  u_especialista(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, chips = (p.itens || []).slice(0, 3);
+    return postU(d, L, 'marca', `
+      <div style="position:absolute;left:50px;top:${t + 20}px;z-index:10;color:#fff">
+        <div data-fit="640" style="${TIT(d, 'font-size:132px;white-space:nowrap;text-shadow:0 8px 24px rgba(0,0,0,.35)')}">${esc(p.titulo)}</div>
+        <div data-fit="640" style="${TIT(d, 'font-size:132px;white-space:nowrap;text-shadow:0 8px 24px rgba(0,0,0,.35)')}">${esc(p.subtitulo)}</div>
+        <div style="margin-top:${40 + X * .2}px;display:flex;flex-direction:column;gap:18px;align-items:flex-start">${chips.map((x) => `<div style="${TIT(d, 'font-size:60px')};background:${shade(d.loja.cor, -.5)};border-left:10px solid #fff;padding:10px 26px 12px 20px;box-shadow:0 10px 24px rgba(0,0,0,.3)">${esc(x)}</div>`).join('')}</div></div>
+      <div style="position:absolute;left:50px;bottom:${b + 40}px;width:${temP ? 500 : 980}px;font-weight:800;font-style:italic;font-size:38px;line-height:1.15;color:#fff;text-transform:uppercase;z-index:10">${esc(p.texto)}</div>
+      ${temP ? '' : motoU(mI(d, 0), 380, t + 330 + X * .2, 720, 640 + X * .5, 4, 'right bottom')}
+      ${pessoaU(d, false, b - 10, 1000 + X * .5, 560)}`, p.seed || 5);
+  },
+  // 12) Parcelas (48X)
+  u_parcelas(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, C = d.loja.cor, NAVY = d.loja.cor2 || '#0f2a5f';
+    return postU(d, L, 'ceu', `
+      <div style="position:absolute;left:10px;top:${t - 30}px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:Anton;font-size:205px;color:${NAVY};line-height:1;white-space:nowrap;z-index:2">${esc(String(p.vertical || '').toUpperCase())}</div>
+      <div style="position:absolute;right:60px;top:${t - 20}px;background:${NAVY};color:#fff;font-weight:700;font-size:34px;padding:14px 28px;border-radius:999px;z-index:10">${esc(p.chamada)}</div>
+      <div style="position:absolute;right:60px;top:${t + 60}px;font-weight:900;font-size:330px;letter-spacing:-14px;line-height:1;color:${C};z-index:10;text-shadow:0 10px 30px rgba(0,0,0,.18)">${esc(p.titulo).replace(/x$/i, `<span style="color:${NAVY}">X</span>`)}</div>
+      <div style="position:absolute;right:40px;top:${t + 460 + X * .25}px;width:470px;background:#fff;border-radius:22px;padding:28px 30px;font-weight:700;font-size:40px;line-height:1.15;color:${NAVY};z-index:10;box-shadow:0 16px 40px rgba(0,0,0,.18)">${rich(p.texto).replace(/<b>/g, `<b style="color:${C};font-weight:900">`)}</div>
+      ${motoU(mI(d, 0), 70, H - b - 700 - X * .5, 720, 700 + X * .5, 5, 'left bottom')}`, p.seed || 11);
+  },
+  // 13) Chamada grande (Não perca tempo / Zero de entrada / Moto nova)
+  u_chamada(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, C = d.loja.cor;
+    return postU(d, L, 'ceu', `
+      <div style="position:absolute;left:0;right:0;top:${t + 10}px;text-align:center;z-index:10;color:#fff">
+        ${p.chamada ? `<span style="display:inline-block;background:${C};${TIT(d, 'font-size:120px')};padding:6px 34px 12px">${esc(p.chamada)}</span>` : ''}
+        <div data-fit="1000" style="${TIT(d, 'font-size:240px;white-space:nowrap;margin-top:-6px;text-shadow:0 10px 30px rgba(0,0,0,.35)')}">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-style:italic;font-size:46px;margin-top:4px;text-shadow:0 4px 14px rgba(0,0,0,.35)">${esc(p.subtitulo)}</div></div>
+      ${motoU(mI(d, 0), 40, H - b - 660 - X * .7, 1000, 660 + X * .7, 5)}`, p.seed || 29);
+  },
+  // 14) Dica (conteúdo)
+  u_dica(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, itens = (p.itens || []).slice(0, 4);
+    return postU(d, L, 'claro', `
+      <div style="position:absolute;left:56px;right:56px;top:${t + 10}px;z-index:10">
+        ${tagU(d, p.chamada || 'Dica da semana', 40)}
+        <div style="${TIT(d, `font-size:${String(p.titulo).length > 30 ? 96 : 118}px;color:#151515;margin:18px 0 ${34 + X * .15}px`)}">${esc(p.titulo)}</div>
+        <div style="width:760px;display:flex;flex-direction:column;gap:${(itens.length > 3 ? 18 : 24) + X * .08}px">
+        ${itens.map((x, i) => `<div style="display:flex;align-items:center;gap:24px;background:#fff;border-radius:22px;padding:22px 26px;box-shadow:0 12px 30px rgba(0,0,0,.12)">
+          <div style="flex:0 0 86px;height:86px;border-radius:50%;background:${d.loja.cor};color:#fff;font-family:Anton;font-size:54px;display:flex;align-items:center;justify-content:center">${i + 1}</div>
+          <div style="font-weight:700;font-size:38px;line-height:1.15;color:#1b1b1b">${esc(x)}</div></div>`).join('')}</div></div>
+      ${motoU(mI(d, 0), 520, H - b - 520 - X * .3, 680, 520 + X * .3, 2, 'right bottom')}`, p.seed || 19);
+  },
+  // 15) Chama no WhatsApp
+  u_whatsapp(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, CE = shade(d.loja.cor, -.38), temP = !!d.vendedor.foto;
+    return postU(d, L, 'cor', `
+      <div style="position:absolute;left:56px;right:56px;top:${t + 10}px;z-index:10;color:#fff;${L.st ? 'text-align:center' : ''}">
+        <div data-fit="968" style="${TIT(d, 'font-size:180px;white-space:nowrap;text-shadow:0 6px 24px rgba(0,0,0,.35)')}">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:52px;margin-top:16px">${esc(p.subtitulo)}</div>
+        <div style="display:inline-flex;align-items:center;gap:22px;background:#fff;color:${CE};border-radius:999px;padding:20px 44px 20px 26px;margin-top:40px;font-weight:900;font-size:66px;box-shadow:0 16px 40px rgba(0,0,0,.3)">${WA_BIG(CE)}${esc(d.loja.whatsapp)}</div></div>
+      ${temP ? motoU(mI(d, 0), 360, H - b - 620 - X * .4, 760, 620 + X * .4, 4, 'right bottom') : motoU(mI(d, 0), 60, H - b - 700 - X * .6, 1000, 700 + X * .6, 4)}
+      ${pessoaU(d, true, b - 10, 760 + X * .5, 560)}`, p.seed || 29);
+  },
+  // 16) Apresentação do vendedor
+  u_apresentacao(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H;
+    return postU(d, L, 'claro', `
+      ${pessoaU(d, false, b - 10, 1040 + X * .7, 600, 5)}
+      <div style="position:absolute;left:56px;top:${t + 10}px;width:560px;z-index:10">
+        ${tagU(d, p.chamada || 'Prazer!', 44)}
+        <div style="${TIT(d, 'font-size:130px;color:#151515;margin-top:16px')}">${esc(p.titulo)}</div>
+        <div style="font-weight:700;font-size:40px;color:#3a3a3a;margin-top:18px;line-height:1.2">${esc(p.subtitulo)}</div>
+        <div class="caixa" style="margin-top:36px;width:500px;${caixa(d)}">${rich(p.texto)}</div></div>
+      ${motoU(mI(d, 0), 10, H - b - 420 - X * .2, 540, 420 + X * .2, 6, 'left bottom')}`, p.seed || 23);
+  },
+  // 17) Destaque do modelo (características + detalhes)
+  u_destaque(d, p, L) {
+    const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, temP = !!d.vendedor.foto, m = mI(d, 0), C = shade(d.loja.cor, -.1);
+    return postU(d, L, 'claro', `
+      <div style="position:absolute;left:50px;top:${t + 10}px;z-index:10;width:700px">
+        <div data-fit="700" style="${TIT(d, `font-size:140px;color:${C};white-space:nowrap`)}">${esc(p.titulo)}</div>
+        <div style="font-weight:800;font-size:44px;color:${C};letter-spacing:6px;text-transform:uppercase;margin-top:6px">${esc(p.subtitulo)}</div>
+        <div style="margin-top:22px;display:flex;flex-direction:column;gap:6px">${(p.itens || []).slice(0, 3).map((x) => `<div style="font-weight:600;font-size:32px;color:#4a5568;letter-spacing:4px;text-transform:uppercase">${esc(x)}</div>`).join('')}</div></div>
+      ${[0, 1, 2].map((i) => thumb(m.foto, DETALHES[i][0], DETALHES[i][1], DETALHES[i][2], 800, t + i * (180 + X * .1), 240, 165)).join('')}
+      ${temP ? motoU(m, -40, H - b - 680 - X * .5, 780, 680 + X * .5, 5, 'left bottom') : motoU(m, 20, H - b - 760 - X * .55, 1040, 760 + X * .55, 5)}
+      ${pessoaU(d, false, b - 10, 760 + X * .5, 420)}`, p.seed || 63);
+  },
+});
+
+/* ======================= app ======================= */
+// Perfis das bandeiras (pesquisa: posicionamento, cor e modelos de maior volume no Brasil)
+const BANDEIRAS = [
+  { nome: 'Honda', cor: '#cc0000', skin: 'honda', motos: [['CG 160', 'honda/h_celular'], ['Biz 125', 'honda/h_nome']], modelos: ['CG 160', 'Biz 125', 'Pop 110i'], pitch: 'a mais vendida do Brasil',
+    tom: 'Confiança, economia e o pós-venda de quem lidera o mercado.', tags: ['#honda', '#hondamotos', '#cg160'] },
+  { nome: 'Yamaha', cor: '#1d3e8f', skin: 'yamaha', slogan: 'Revs your Heart', motos: [['Factor 150', 'yamaha/y_nova'], ['Fazer FZ15', 'yamaha/y_destaque'], ['Fazer FZ25', 'yamaha/y_gigante'], ['R15', 'yamaha/y_esportiva']], modelos: ['Factor 150', 'Fazer FZ15', 'Fazer FZ25'], pitch: 'economia com estilo',
+    tom: 'Emoção e desempenho em cada quilômetro.', tags: ['#yamaha', '#yamahamotos', '#factor150'] },
+  { nome: 'Shineray', cor: '#e30613', skin: 'padrao', motos: [['New Jet', 'jet'], ['Jet Açaí', 'acai'], ['Urban 150', 'scooter']], modelos: ['New Jet', 'Jet Açaí', 'Urban 150'], pitch: 'economia no dia a dia',
+    tom: 'Moto nova com preço que cabe no seu bolso.', tags: ['#shineray', '#shinerayoficial', '#jet125'] },
+  { nome: 'Suzuki', cor: '#00529b', skin: 'padrao', motos: [], modelos: ['GSX-8S', 'V-Strom 800', 'Hayabusa'], pitch: 'performance de verdade',
+    tom: 'Tradição japonesa e performance para quem leva a moto a sério.', tags: ['#suzuki', '#suzukimotos', '#vstrom'] },
+  { nome: 'Haojue', cor: '#d0101e', skin: 'padrao', motos: [], modelos: ['NK 150', 'DK 160', 'DR 160'], pitch: 'pronta para todo dia',
+    tom: 'Custo-benefício com a qualidade de uma das maiores fabricantes do mundo.', tags: ['#haojue', '#suzukihaojue', '#nk150'] },
+  { nome: 'Avelloz', cor: '#f26a1b', cor2: '#0f2a5f', skin: 'avelloz', motos: [['AZ1', 'avelloz/a_queridinha'], ['AZ125', 'avelloz/a_tempo']], modelos: ['AZ1', 'AZ125', 'AZ160 Xtreme'], pitch: 'a queridinha do Brasil',
+    tom: 'Marca brasileira, feita para o seu dia a dia.', tags: ['#avelloz', '#avellozmotos', '#az1'] },
+  { nome: 'Multimarcas', cor: '#d7141a', skin: 'padrao', motos: [], modelos: ['Moto 0km', 'Seminova', 'Moto nova'], pitch: 'as melhores marcas',
+    tom: 'As melhores marcas e condições num só lugar.', tags: ['#motos0km', '#seminovas'] },
+];
+let perfil = BANDEIRAS[BANDEIRAS.length - 1];
+const PESSOA_PH = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9ced6"/><stop offset="1" stop-color="#a9b0bb"/></linearGradient></defs><circle cx="300" cy="230" r="140" fill="url(#g)"/><path d="M60 800 C60 560 160 430 300 430 C440 430 540 560 540 800 Z" fill="url(#g)"/><text x="300" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="44" fill="#fff">SUA FOTO</text><text x="300" y="694" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="44" fill="#fff">AQUI</text></svg>`);
+const PADRAO = { nome: 'Sua Loja', instagram: '@sualoja', whatsapp: '(00) 00000-0000' };
+const loja = { ...PADRAO, cor: '#d7141a', logo: null, cidade: '', marca: '' };
+const vend = { nome: '', fotos: [] };   // fotos[0] = {url, original, remover, tol, status}
+const logoFotos = [];
+let modo = 'loja';
+const DEMO = {};
+
+// mesmos templates para todas as bandeiras; motos: índices na biblioteca de motos da bandeira
+const CARDS = {
+  loja: [
+    { nome: '1ª parcela', p: { template: 'u_oferta', titulo: '1ª parcela', subtitulo: 'para daqui 30 dias!', seed: 3 }, motos: [0] },
+    { nome: 'Preço da parcela', p: { template: 'u_preco', titulo: '#MOD1', rotulo: 'Parcelas a partir de', valor: '299,90', complemento: '/mês', detalhe: 'Entrada facilitada · Aprovação rápida', seed: 7 }, motos: [0] },
+    { nome: 'Nome gigante', p: { template: 'u_gigante', titulo: '#MOD2', texto: 'Ideal para quem busca estilo, conforto e *praticidade no dia a dia.*' }, motos: [1] },
+    { nome: 'Chegou a hora', p: { template: 'u_celular', titulo: 'Chegou a hora!', subtitulo: 'De sair de moto nova!' }, motos: [0] },
+    { nome: 'Não perca tempo', p: { template: 'u_chamada', chamada: 'NÃO PERCA', titulo: 'TEMPO!', subtitulo: 'Vai de #MARCA!' }, motos: [1] },
+    { nome: 'Parcelas', p: { template: 'u_parcelas', chamada: 'Financie em até', titulo: '48X', texto: 'Compre sua *#MARCA* com parcelas que *cabem no seu bolso!*', vertical: '#MARCA' }, motos: [0] },
+    { nome: 'Compre e ganhe', p: { template: 'u_brinde', chamada: 'Compre agora a sua', titulo: '#MARCA', brindes: ['Capacete', 'Tanque Cheio', ''], rodape_texto: 'Promoção por tempo limitado.', seed: 11 }, motos: [0] },
+    { nome: 'Card do modelo', p: { template: 'u_card', titulo: '#MOD1', texto: 'Realize o sonho da sua *moto nova!*' }, motos: [0] },
+    { nome: 'Sonho realizado', p: { template: 'u_sonho', linha1: 'MAIS UM SONHO', titulo: 'REALIZADO!', subtitulo: 'Parabéns pela sua conquista!' }, motos: [0], livre: true },
+    { nome: 'Formas de pagamento', p: { template: 'u_especialista', titulo: 'Aqui você', subtitulo: 'escolhe', itens: ['À vista', 'Consórcio', 'Financiamento'], texto: 'A gente te ajuda a encontrar a melhor forma de realizar esse sonho!', seed: 5 }, motos: [1] },
+    { nome: 'Zero de entrada', p: { template: 'u_chamada', chamada: '', titulo: 'Zero de entrada', subtitulo: 'Seu sonho mais perto do que você imagina.' }, motos: [0] },
+    { nome: 'Catálogo', p: { template: 'u_catalogo', titulo: 'Nosso Catálogo', texto: 'Arraste para o lado e confira todos os *modelos disponíveis* para você!', seed: 5 }, motos: [0, 1, 2, 3] },
+    { nome: 'Consórcio (capa)', p: { template: 'u_consorcio1', titulo: 'Como funciona o *consórcio #MARCA?*', subtitulo: 'Confira ao lado' }, motos: [0, 1, 2] },
+    { nome: 'Consórcio (passo a passo)', p: { template: 'u_consorcio2', titulo: 'Como funciona o *consórcio #MARCA:*', itens: ['Você escolhe sua moto e entra em um grupo com outras pessoas que também querem comprar.', 'Todo mês, cada participante paga uma parcela que cabe no bolso.', 'Em cada assembleia acontecem sorteios e lances; quem é contemplado leva a moto.'] }, motos: [0, 1] },
+    { nome: 'Destaque do modelo', p: { template: 'u_destaque', titulo: '#MOD1', subtitulo: '#PITCH', itens: ['Econômica', 'Confiável', 'Pronta para o dia a dia'] }, motos: [0] },
+    { nome: 'Dica', p: { template: 'u_dica', chamada: 'Dica da semana', titulo: '3 cuidados que fazem sua moto durar mais', itens: ['Calibre os pneus toda semana', 'Lubrifique a corrente a cada 500 km', 'Troque o óleo no prazo certo', ''], seed: 19 }, motos: [1] },
+    { nome: 'Chama no WhatsApp', p: { template: 'u_whatsapp', titulo: 'Chama no Zap!', subtitulo: 'Sua moto nova está a uma mensagem.', seed: 29 }, motos: [0] },
+  ],
+  vendedor: [
+    { nome: 'Apresentação', p: { template: 'u_apresentacao', chamada: 'Prazer!', titulo: '#EUSOU', subtitulo: 'Consultor(a) #MARCA', texto: 'Me chama no WhatsApp que eu te ajudo a *sair de moto nova!*', seed: 23 }, motos: [0] },
+    { nome: 'Especialista', p: { template: 'u_especialista', titulo: 'Especialista', subtitulo: '#MARCA', itens: ['À vista', 'Consórcio', 'Financiamento'], texto: 'Te ajudo a descobrir a melhor forma de realizar esse sonho!', seed: 5 }, motos: [0] },
+    { nome: '1ª parcela', p: { template: 'u_oferta', titulo: '1ª parcela', subtitulo: 'para daqui 30 dias!', seed: 3 }, motos: [0] },
+    { nome: 'Card do modelo', p: { template: 'u_card', titulo: '#MOD1', texto: 'Realize o sonho da sua *moto nova!*' }, motos: [0] },
+    { nome: 'Destaque do modelo', p: { template: 'u_destaque', titulo: '#MOD2', subtitulo: '#PITCH', itens: ['Econômica', 'Confiável', 'Pronta para o dia a dia'] }, motos: [1] },
+    { nome: 'Consórcio (capa)', p: { template: 'u_consorcio1', titulo: 'Como funciona o *consórcio #MARCA?*', subtitulo: 'Confira ao lado' }, motos: [0, 1, 2] },
+    { nome: 'Consórcio (passo a passo)', p: { template: 'u_consorcio2', titulo: 'Como funciona o *consórcio #MARCA:*', itens: ['Você escolhe sua moto e entra em um grupo com outras pessoas que também querem comprar.', 'Todo mês, cada participante paga uma parcela que cabe no bolso.', 'Em cada assembleia acontecem sorteios e lances; quem é contemplado leva a moto.'] }, motos: [0, 1] },
+    { nome: 'Sonho realizado', p: { template: 'u_sonho', linha1: 'MAIS UM SONHO', titulo: 'REALIZADO!', subtitulo: 'Parabéns pela sua conquista!' }, motos: [0], livre: true },
+    { nome: 'Compre e ganhe', p: { template: 'u_brinde', chamada: 'Compre comigo a sua', titulo: '#MARCA', brindes: ['Capacete', 'Tanque Cheio', ''], rodape_texto: 'Promoção por tempo limitado.', seed: 11 }, motos: [0] },
+    { nome: 'Me chama no WhatsApp', p: { template: 'u_whatsapp', titulo: 'Me chama!', subtitulo: 'Te ajudo a sair de moto nova.', seed: 29 }, motos: [1] },
+    { nome: 'Preço da parcela', p: { template: 'u_preco', titulo: '#MOD1', rotulo: 'Parcelas a partir de', valor: '299,90', complemento: '/mês', detalhe: 'Entrada facilitada · Aprovação rápida', seed: 7 }, motos: [0] },
+    { nome: 'Catálogo', p: { template: 'u_catalogo', titulo: 'Meus modelos', texto: 'Arraste para o lado e confira os *modelos disponíveis* que separei para você!', seed: 5 }, motos: [0, 1, 2, 3] },
+  ],
+};
+const CARDS_MARCA = {
+  Honda: [
+    { nome: 'Especialista', modos: ['vendedor'], p: { template: 'h_especialista', titulo: 'Especialista', subtitulo: '#MARCA motos', linha1: 'Realize seu sonho', linha2: 'com quem entende!' }, motos: ['honda/h_celular', 'honda/h_nome'] },
+    { nome: 'Modelo especial', p: { template: 'h_modelo', titulo: 'CG 160', subtitulo: 'Especial 50 anos', texto: 'Uma edição especial para celebrar 50 anos de história, com detalhes exclusivos.' }, motos: ['honda/h_celular'] },
+    { nome: 'Sonho realizado', p: { template: 'h_sonho', linha1: 'MAIS UM SONHO', titulo: 'REALIZADO!', subtitulo: 'Parabéns pela sua conquista!' }, motos: ['honda/h_celular'], livre: true },
+    { nome: 'Chegou a hora', p: { template: 'h_celular', titulo: 'Chegou a hora!', subtitulo: 'De sair de moto nova!' }, motos: ['honda/h_celular'] },
+    { nome: 'Nome gigante', p: { template: 'h_nome', titulo: 'BIZ', texto: 'Ideal para quem busca estilo, conforto e *praticidade no dia a dia.*' }, motos: ['honda/h_nome'] },
+    { nome: 'Consórcio (capa)', p: { template: 'h_consorcio1', titulo: 'Como funciona o *consórcio #MARCA?*', subtitulo: 'Confira ao lado' }, motos: ['honda/h_celular', 'honda/h_nome', 'honda/h_nome'] },
+    { nome: 'Consórcio (passo a passo)', p: { template: 'h_consorcio2', titulo: 'Como funciona o *consórcio #MARCA:*', itens: ['Você escolhe sua moto e entra em um grupo com outras pessoas que também querem comprar.', 'Todo mês, cada participante paga uma parcela que cabe no bolso.', 'Em cada assembleia acontecem sorteios e lances; quem é contemplado leva a moto.'] }, motos: ['honda/h_celular', 'honda/h_nome'] },
+    { nome: 'Card CG', p: { template: 'h_card', titulo: 'CG 160', texto: 'Realize o sonho da sua *moto nova!*' }, motos: ['honda/h_celular'] },
+    { nome: 'Card Biz', p: { template: 'h_card', titulo: 'Biz 125', texto: 'Realize o sonho da sua *moto nova!*' }, motos: ['honda/h_nome'] },
+  ],
+  Yamaha: [
+    { nome: 'Especialista', p: { template: 'y_especialista', titulo: '#ESPECIALISTA', subtitulo: '#MARCA', itens: ['À vista', 'Consórcio', 'Financiamento'], texto: '#TEAJUDO a descobrir a melhor forma de realizar esse sonho!' }, motos: ['yamaha/y_gigante'] },
+    { nome: 'Lançamento', p: { template: 'y_nova', titulo: 'Nova Factor', texto: '*Nova Factor:* modernidade e funcionalidade em um só lugar.' }, motos: ['yamaha/y_nova'] },
+    { nome: 'Destaque do modelo', p: { template: 'y_destaque', titulo: 'Fazer FZ15', subtitulo: 'ABS', itens: ['Mais conectividade', 'Mais completa', 'Muito mais moto'] }, motos: ['yamaha/y_destaque'] },
+    { nome: 'Nome gigante', p: { template: 'y_gigante', titulo: 'Fazer FZ25', texto: 'Quem tem uma Fazer tem tudo: desempenho, eficiência e confiabilidade.' }, motos: ['yamaha/y_gigante'] },
+    { nome: 'Esportiva R15', p: { template: 'y_esportiva', titulo: 'R15', texto: 'Acelere suas emoções. Domine a cidade.' }, motos: ['yamaha/y_esportiva'] },
+  ],
+  Avelloz: [
+    { nome: 'Moto nova', p: { template: 'a_sonho', chamada: 'Realize o sonho da', titulo: 'MOTO NOVA!', subtitulo: 'AZ125 Alfa' }, motos: ['avelloz/a_tempo'] },
+    { nome: 'Parcelas', p: { template: 'a_parcelas', chamada: 'Financie em até', titulo: '48X', texto: 'Compre sua *#MARCA* com parcelas que *cabem no seu bolso!*', vertical: '#MARCA' }, motos: ['avelloz/a_tempo'] },
+    { nome: 'Escolha a sua', p: { template: 'a_escolha', titulo: 'Escolha a sua e seja feliz!', subtitulo: 'Qual #MARCA combina com você?' }, motos: ['avelloz/a_queridinha', 'avelloz/a_tempo'] },
+    { nome: 'Zero de entrada', p: { template: 'a_zero', titulo: 'Seu sonho,', subtitulo: 'zero de entrada.', selo: 'Financiamento facilitado' }, motos: ['avelloz/a_tempo', 'avelloz/a_queridinha'] },
+    { nome: 'Desempenho', p: { template: 'a_desempenho', titulo: 'Robusta, econômica e pronta para o dia a dia.', vertical: 'AZ125' }, motos: ['avelloz/a_tempo'] },
+    { nome: 'Não perca tempo', p: { template: 'a_tempo', chamada: 'NÃO PERCA', titulo: 'TEMPO!', subtitulo: 'Vai de #MARCA!' }, motos: ['avelloz/a_tempo'] },
+    { nome: 'Nome gigante', p: { template: 'a_queridinha', subtitulo: 'A queridinha do Brasil!', titulo: 'AZ1' }, motos: ['avelloz/a_queridinha'] },
+    { nome: 'Linha de modelos', p: { template: 'a_linha', titulo: 'Linha #MARCA', subtitulo: 'Consulte as condições e realize seu sonho!' }, motos: ['avelloz/a_queridinha', 'avelloz/a_tempo'] },
+  ],
+};
+const NOMES = { oferta: 'Oferta', preco: 'Preço da parcela', brinde: 'Compre e ganhe', catalogo: 'Catálogo', lancamento: 'Lançamento', dica: 'Dica', whatsapp: 'WhatsApp', galeria: 'Galeria de detalhes', modelo: 'Modelo em destaque', apresentacao: 'Apresentação' };
+const COM_PESSOA = { vendedor: ['u_oferta', 'u_brinde', 'u_catalogo', 'u_card', 'u_consorcio1', 'u_especialista', 'u_whatsapp', 'u_apresentacao', 'u_destaque', 'apresentacao', 'oferta', 'modelo', 'brinde', 'whatsapp', 'catalogo', 'h_especialista', 'h_consorcio1', 'h_card', 'y_especialista', 'y_destaque'], loja: [] };
+
+// textos que dependem da bandeira/nome (até a pessoa editar)
+const marcaTxt = () => (perfil.nome === 'Multimarcas' ? 'Moto nova' : perfil.nome);
+function tokens(v) {
+  if (typeof v !== 'string') return v;
+  return v.replace(/#EUSOU/g, vend.nome ? `Eu sou ${vend.nome}` : 'Muito prazer!').replace(/#ESPECIALISTA/g, modo === 'vendedor' ? 'Especialista' : 'Especialistas')
+    .replace(/#TEAJUDO/g, modo === 'vendedor' ? 'Te ajudo' : 'A gente te ajuda')
+    .replace(/#MARCA/g, marcaTxt()).replace(/#MOTO/g, perfil.nome === 'Multimarcas' ? 'moto' : perfil.nome)
+    .replace(/#MOD(\d)/g, (_, n) => nomeModelo(+n - 1)).replace(/#PITCH/g, perfil.pitch);
+}
+const txt = (c, k) => tokens(c.p[k]);
+function nomeModelo(i) {
+  const lib = perfil.motos || [];
+  if (lib.length) return lib[i % lib.length][0];
+  return perfil.modelos[i % perfil.modelos.length] || '';
+}
+
+const LEG_U = { u_oferta: 'oferta', u_preco: 'preco', u_brinde: 'brinde', u_catalogo: 'catalogo', u_dica: 'dica', u_whatsapp: 'whatsapp', u_apresentacao: 'apresentacao', u_card: 'modelo' };
+const LEG = {
+  oferta: (p, eu) => `${p.titulo} ${p.subtitulo} 🏍️💨\n\n${eu ? 'Eu faço' : 'A gente faz'} a simulação na hora e ${eu ? 'te ajudo' : 'ajuda você'} a escolher o modelo ideal.`,
+  preco: (p) => `${p.titulo} com ${(p.rotulo || '').toLowerCase()} R$ ${p.valor}${p.complemento || ''}! 💥\n\n${p.detalhe || ''}`,
+  brinde: (p, eu) => `Comprando sua ${p.titulo === 'Moto nova' ? 'moto' : p.titulo} ${eu ? 'comigo' : 'com a gente'} você ainda ganha: ${p.brindes.join(' + ')}! 🎁\n\n${p.rodape_texto}`,
+  catalogo: () => `Qual dessas combina mais com você? 👀\n\nArrasta pro lado e confere os modelos disponíveis.`,
+  lancamento: (p) => `${p.titulo}${p.subtitulo ? ' ' + p.subtitulo : ''} já está aqui na loja! ✨\n\nDesign, economia e a confiança que você precisa no dia a dia. Venha conhecer de perto.`,
+  modelo: (p, eu) => `Quer a ${p.titulo}? ${eu ? 'Tenho' : 'Temos'} condições exclusivas essa semana! 💥`,
+  galeria: (p) => `Cada detalhe da ${p.titulo} pensado pra você. 😍\n\nVenha ver pessoalmente!`,
+  dica: (p) => `${p.titulo} 🔧\n\n${p.itens.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\nSalva esse post pra não esquecer!`,
+  whatsapp: (p) => `${p.titulo} ${p.subtitulo} 📲`,
+  apresentacao: (p) => `${p.chamada} ${p.titulo}! 👋\n\n${p.subtitulo}. ${(p.texto || '').replace(/\*/g, '')}`,
+};
+const semAcento = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+function legenda(c) {
+  if (c.legenda != null) return c.legenda;
+  const eu = modo === 'vendedor', p = postP(c);
+  const tags = ['#motos', '#motonova', ...perfil.tags];
+  if (loja.cidade) tags.push('#' + semAcento(loja.cidade));
+  tags.push('#' + (semAcento(loja.nome) || 'loja'));
+  const lk = LEG_U[c.p.template] || c.p.template;
+  const base = LEG[lk] ? LEG[lk](p, eu) : [p.chamada, p.linha1, p.titulo, p.subtitulo, p.linha2].filter(Boolean).join(' ') + ' 🏍️' + (p.texto ? '\n\n' + String(p.texto).replace(/\*/g, '') : '') + (p.itens.length ? '\n\n' + p.itens.map((t, i) => `${i + 1}. ${t}`).join('\n') : '');
+  return `${base}\n\n${perfil.tom}\n\n📲 ${eu ? 'Me chama' : 'Chama a gente'} no WhatsApp: ${loja.whatsapp}\n📍 ${loja.nome}${loja.cidade ? ' · ' + loja.cidade : ''}\n\n${tags.join(' ')}`;
+}
+
+const cards = () => CARDS[modo].filter((c) => !c.modos || c.modos.includes(modo));
+const usaPessoa = (c) => COM_PESSOA[modo].includes(c.p.template) && !c.semPessoa;
+function refDe(c) {
+  const r = c.ref && REFS[c.ref]; if (!r) return null;
+  if (r.pessoa && !usaPessoa(c)) return null; // a referência tem pessoa e a arte está sem: usa o fundo desenhado
+  return r;
+}
+function dadosDe(c) {
+  return {
+    modo, loja: { ...loja, cor2: perfil.cor2 || null }, skin: perfil.skin || 'padrao',
+    vendedor: { nome: vend.nome, foto: usaPessoa(c) ? (vend.fotos[0]?.url || PESSOA_PH) : null },
+    motos: c.fotos.map((f, i) => ({ foto: f.url, cor: i === 0 ? (c.cor || f.cor) : f.cor, modelo: c.p.titulo })),
+    extra: { foto: c.livres?.[0]?.url || null },
+    ref: refDe(c),
+  };
+}
+function postP(c) {
+  const p = { moto: 0 };
+  for (const [k, v] of Object.entries(c.p)) p[k] = Array.isArray(v) ? v.filter(Boolean).map(tokens) : tokens(v);
+  p.brindes = p.brindes || []; p.itens = p.itens || [];
+  return p;
+}
+function pintar(pv, c, formato = 'feed') {
+  pv.classList.toggle('story', formato === 'story');
+  pv.innerHTML = htmlFormato(dadosDe(c), postP(c), formato);
+  const el = pv.firstElementChild; el.style.transform = `scale(${pv.clientWidth / 1080})`;
+  fitAll(el);
+}
+function pintarGaleria() { cards().forEach((c) => c._pv && c._pv.isConnected && pintar(c._pv, c)); }
+let tGal = null; const pintarDepois = () => { clearTimeout(tGal); tGal = setTimeout(pintarGaleria, 120); };
+window.addEventListener('resize', pintarDepois);
+
+/* ---------- etapas ---------- */
+function ir(n) {
+  document.querySelectorAll('.etapa').forEach((e, i) => e.classList.toggle('on', i === n - 1));
+  document.querySelectorAll('.passos div').forEach((d, i) => d.classList.toggle('on', i < n));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 3) montarGaleria();
+}
+document.querySelectorAll('[data-ir]').forEach((b) => (b.onclick = () => ir(+b.dataset.ir)));
+
+function montarBandeiras() {
+  const box = $('#bandeiras');
+  BANDEIRAS.forEach((b0) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'band'; b.style.setProperty('--c', b0.cor); b.title = b0.nome;
+    b.innerHTML = `<b>${esc(b0.nome)}</b>`;
+    if (b0.nome !== 'Multimarcas') { const im = new Image(); im.alt = b0.nome; im.onload = () => { b.innerHTML = ''; b.appendChild(im); }; im.src = `assets/bandeiras/${slug(b0.nome)}.png`; }
+    else b.innerHTML = `<b>Multimarcas</b><span style="display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:4px">use a logo da sua loja</span>`;
+    b.onclick = async () => {
+      box.querySelectorAll('.band').forEach((x) => x.classList.toggle('on', x === b));
+      perfil = b0; loja.marca = b0.nome; loja.cor = b0.cor; loja.slogan = b0.slogan || ''; $('#lCor').value = b0.cor;
+      await aplicarLogoBandeira(b0.nome); await carregarMotosMarca(); await carregarRefs(b0.nome);
+      setTimeout(() => ir(2), 120);
+    };
+    box.appendChild(b);
+  });
+}
+
+function setModo(m) {
+  modo = m;
+  document.querySelectorAll('#modo button').forEach((b) => b.classList.toggle('on', b.dataset.v === m));
+  document.querySelectorAll('.so-vend').forEach((e) => (e.style.display = m === 'vendedor' ? '' : 'none'));
+}
+function bindDados() {
+  $('#modo').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setModo(b.dataset.v); });
+  const set = (id, k, fn) => $(id).addEventListener('input', (e) => { let v = e.target.value.trim(); if (fn) v = fn(v); loja[k] = v || PADRAO[k] || ''; });
+  set('#lNome', 'nome'); set('#lWa', 'whatsapp'); set('#lCidade', 'cidade');
+  set('#lIg', 'instagram', (v) => (v && !v.startsWith('@') ? '@' + v : v));
+  $('#lCor').addEventListener('input', (e) => (loja.cor = e.target.value));
+  $('#vNome').addEventListener('input', (e) => (vend.nome = e.target.value.trim()));
+  logoUI = criarFotos($('#logoBox'), { n: 1, fotos: logoFotos, max: 900, rotulo: '+ Logo', dica: '', maxFrac: 0.995, onChange: async () => {
+    const f = logoFotos[0];
+    if (f && f.marca && f.url !== f.original) f.marca = false;
+    loja.logo = f?.url || null; loja.logoBranco = f ? (f.marca ? f.branco : await silhuetaBranca(f.url)) : null;
+    loja.logoClaro = f && !f.marca ? await ehClaro(f.url) : false;
+    avisoLogo();
+  } });
+  criarFotos($('#vFotoBox'), { n: 1, fotos: vend.fotos, max: 1300, rotulo: '+ Foto', dica: 'Melhor com parede lisa atrás ou PNG sem fundo.' });
+  $('#verArtes').onclick = () => {
+    const falta = [];
+    if (loja.nome === PADRAO.nome) falta.push('nome da loja');
+    if (loja.whatsapp === PADRAO.whatsapp) falta.push('WhatsApp');
+    if (modo === 'vendedor' && !vend.nome) falta.push('seu nome');
+    $('#erro2').textContent = falta.length ? 'Preencha: ' + falta.join(', ') + '.' : '';
+    if (!falta.length) ir(3);
+  };
+}
+
+/* ---------- logos ---------- */
+const urlParaData = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error('404'); return fileToDataURL(await r.blob()); };
+// versão branca da logo (para fundos escuros e rodapé): partes brancas do desenho ficam vazadas
+async function brancoDe(url) {
+  const i = await loadImg(url), c = document.createElement('canvas'); c.width = i.width; c.height = i.height;
+  const x = c.getContext('2d'); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+  for (let k = 0; k < p.length; k += 4) { const mn = Math.min(p[k], p[k + 1], p[k + 2]); p[k + 3] = p[k + 3] * Math.min(1, Math.max(0, (255 - mn) / 70)); p[k] = p[k + 1] = p[k + 2] = 255; }
+  x.putImageData(d, 0, 0); return c.toDataURL('image/png');
+}
+// logo enviada pela loja: versão branca simples (mantém textos brancos)
+async function silhuetaBranca(url) {
+  const i = await loadImg(url), c = document.createElement('canvas'); c.width = i.width; c.height = i.height;
+  const x = c.getContext('2d'); x.drawImage(i, 0, 0); const d = x.getImageData(0, 0, c.width, c.height), p = d.data;
+  for (let k = 0; k < p.length; k += 4) p[k] = p[k + 1] = p[k + 2] = 255;
+  x.putImageData(d, 0, 0); return c.toDataURL('image/png');
+}
+// logo feita para fundo escuro? (média dos pixels visíveis bem clara)
+async function ehClaro(url) {
+  const i = await loadImg(url), c = document.createElement('canvas'), W = 120, H = Math.max(1, Math.round(120 * i.height / i.width)); c.width = W; c.height = H;
+  const x = c.getContext('2d'); x.drawImage(i, 0, 0, W, H); const p = x.getImageData(0, 0, W, H).data; let s = 0, n = 0;
+  for (let k = 0; k < p.length; k += 4) if (p[k + 3] > 128) { s += 0.299 * p[k] + 0.587 * p[k + 1] + 0.114 * p[k + 2]; n++; }
+  return n > 0 && s / n > 165;
+}
+// referências (fundo reconstruído + moto original) — carregadas ao escolher a bandeira
+const REFS = {};
+const FALLBACK = ['jet', 'acai', 'scooter'];
+async function carregarMotosMarca() {
+  const lib = perfil.motos || [];
+  await Promise.all(lib.map(async ([, k]) => {
+    if (DEMO[k]) return;
+    try {
+      const url = await urlParaData(`assets/motos/${k}-moto.png`);
+      const i = await loadImg(url), cv = document.createElement('canvas'); cv.width = i.width; cv.height = i.height; cv.getContext('2d').drawImage(i, 0, 0);
+      DEMO[k] = { url, cor: corDominante(cv), original: url, remover: false, tol: 30, status: 'transparente' };
+    } catch (e) { /* foto ainda não cadastrada */ }
+  }));
+  const chaves = lib.map(([, k]) => k).filter((k) => DEMO[k]);
+  const pega = (i) => ({ ...DEMO[chaves.length ? chaves[i % chaves.length] : FALLBACK[i % 3]] });
+  [...CARDS.loja, ...CARDS.vendedor].forEach((c) => { if (!c._fotoTrocada) c.fotos = c.motos.map(pega); });
+}
+async function carregarRefs(marca) {
+  const pasta = slug(marca), lista = (CARDS_MARCA[marca] || []).filter((c) => c.ref);
+  if (!lista.length) return;
+  let caixas = {};
+  try { caixas = await (await fetch(`assets/refs/${pasta}/caixas.json`)).json(); } catch (e) { return; }
+  await Promise.all(lista.map(async (c) => {
+    if (REFS[c.ref]) return;
+    const id = c.ref.split('/')[1];
+    try {
+      const bg = await urlParaData(`assets/refs/${pasta}/${id}-bg.jpg`);
+      let moto = null; try { moto = await urlParaData(`assets/refs/${pasta}/${id}-moto.png`); } catch (e) {}
+      REFS[c.ref] = { bg, moto, caixa: caixas[id] || null, pessoa: caixas[id + ':pessoa'] || null };
+      if (moto && !c._fotoTrocada) c.fotos = [{ url: moto, original: moto, remover: false, tol: 30, status: 'transparente', cor: c.cor || null }];
+    } catch (e) { /* sem referência: usa o fundo desenhado */ }
+  }));
+}
+let logoUI = null;
+async function aplicarLogoBandeira(nome) {
+  if (logoFotos[0] && !logoFotos[0].marca) return; // a pessoa já enviou a logo da loja: mantém
+  logoFotos.length = 0; loja.logo = null; loja.logoBranco = null; loja.logoClaro = false;
+  try {
+    const s = slug(nome), url = await urlParaData(`assets/bandeiras/${s}.png`), branco = await urlParaData(`assets/bandeiras/${s}-branco.png`);
+    logoFotos[0] = { url, original: url, remover: false, tol: 30, status: 'transparente', marca: true, branco };
+    loja.logo = url; loja.logoBranco = branco;
+  } catch (e) { /* bandeira sem logo cadastrada (ex.: Multimarcas) */ }
+  logoUI?.desenhar(); avisoLogo();
+}
+function avisoLogo() {
+  const h = $('#logoHint'); if (!h) return;
+  h.textContent = logoFotos[0]?.marca ? `Usando a logo da ${loja.marca}. Se preferir, toque nela e troque pela logo da sua loja.`
+    : logoFotos[0] ? 'Logo da sua loja aplicada.' : 'Envie a logo da sua loja. Sem logo, o nome da loja aparece escrito.';
+}
+
+/* ---------- fotos com ajuste de fundo ---------- */
+// fotos: array compartilhado; cada item {url, cor, original, remover, tol, status}
+function criarFotos(box, { n = 1, fotos, max = 1300, rotulo = '+ Foto', dica = 'Foto com fundo branco ou liso: o fundo sai sozinho.', onChange = () => {}, podeApagar = true, maxFrac = 0.93, removerPadrao = true }) {
+  box.innerHTML = `<div class="fotos"></div>${dica ? `<div class="hint">${esc(dica)}</div>` : ''}
+    <div class="ajuste"><div class="grande"><img alt=""></div>
+      <div class="lin"><label><input type="checkbox" class="rem"> Remover fundo</label><span class="st" style="font-weight:600;color:var(--muted);font-size:12px"></span></div>
+      <div class="lin sl" style="display:block"><div style="margin-bottom:4px">Intensidade da remoção</div><input type="range" min="6" max="90" step="2" class="tol">
+        <div class="faixa"><span>Menos (preserva a moto)</span><span>Mais (tira mais fundo)</span></div></div>
+      <div class="lin"><button class="link troca" type="button">Trocar foto</button><button class="link del" type="button" style="color:#c81e1e">Remover foto</button></div>
+      <input type="file" accept="image/*" class="arq" hidden></div>`;
+  const row = box.querySelector('.fotos'), aj = box.querySelector('.ajuste'), arq = box.querySelector('.arq');
+  const rem = aj.querySelector('.rem'), tol = aj.querySelector('.tol'), st = aj.querySelector('.st'), big = aj.querySelector('.grande img');
+  let sel = -1, tProc = null;
+
+  const statusTxt = (f) => !f ? '' : f.status === 'transparente' ? 'Foto já sem fundo ✓' : !f.remover ? 'Fundo mantido' :
+    f.status === 'removido' ? 'Fundo removido ✓' : f.status === 'processando' ? 'Processando…' : 'Não deu para separar o fundo nessa intensidade';
+  function desenhar() {
+    row.innerHTML = '';
+    for (let j = 0; j < n; j++) {
+      const f = fotos[j];
+      if (!f && j > fotos.length) break;
+      const s = document.createElement('div'); s.className = 'foto' + (j === sel ? ' sel' : '');
+      if (f) { s.innerHTML = `<img src="${f.url}"><span class="troca">ajustar</span>`; s.onclick = () => selecionar(j); }
+      else { s.innerHTML = esc(rotulo); const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.onchange = () => inp.files[0] && carregar(j, inp.files[0]); s.appendChild(inp); }
+      row.appendChild(s);
+    }
+    const f = fotos[sel];
+    aj.classList.toggle('on', !!f);
+    if (f) {
+      big.src = f.url; rem.checked = f.remover; tol.value = f.tol; st.textContent = statusTxt(f);
+      aj.querySelector('.sl').style.display = f.status === 'transparente' || !f.remover ? 'none' : 'block';
+      rem.parentElement.style.display = f.status === 'transparente' ? 'none' : '';
+      st.style.color = f.status === 'fundo-complexo' ? '#a05a00' : 'var(--muted)';
+      aj.querySelector('.del').style.display = podeApagar && (n === 1 || fotos.length > 1) ? '' : 'none';
+    }
+  }
+  function selecionar(j) { sel = sel === j ? -1 : j; desenhar(); }
+  async function carregar(j, file) {
+    const r = await prepararImagem(file, { removerFundo: removerPadrao, max, tol: 30, maxFrac });
+    fotos[j] = { url: r.url, cor: r.cor, original: r.original, remover: removerPadrao, tol: 30, status: removerPadrao ? r.status : 'mantido', marca: false };
+    sel = j; desenhar(); onChange();
+  }
+  function reprocessar() {
+    const f = fotos[sel]; if (!f) return;
+    f.status = 'processando'; st.textContent = statusTxt(f);
+    clearTimeout(tProc);
+    tProc = setTimeout(async () => {
+      const r = await prepararImagem(f.original, { removerFundo: f.remover, max, tol: f.tol, maxFrac });
+      f.url = r.url; f.cor = r.cor || f.cor; f.status = f.remover ? r.status : 'mantido';
+      desenhar(); onChange();
+    }, 140);
+  }
+  rem.onchange = () => { fotos[sel].remover = rem.checked; reprocessar(); };
+  tol.oninput = () => { fotos[sel].tol = +tol.value; reprocessar(); };
+  aj.querySelector('.troca').onclick = () => arq.click();
+  arq.onchange = () => { if (arq.files[0]) carregar(sel, arq.files[0]); arq.value = ''; };
+  aj.querySelector('.del').onclick = () => { fotos.splice(sel, 1); sel = -1; desenhar(); onChange(); };
+  desenhar();
+  return { desenhar };
+}
+
+/* ---------- galeria ---------- */
+function montarGaleria() {
+  $('#chips').innerHTML = `<span class="chip marca">${esc(loja.marca || 'Multimarcas')}</span><span class="chip">${esc(loja.nome)}</span><span class="chip">${modo === 'vendedor' ? 'Posts para vendedor' : 'Posts para loja'}</span>`;
+  const g = $('#gal'); g.innerHTML = '';
+  cards().forEach((c, i) => {
+    const el = document.createElement('div'); el.className = 'gcard';
+    el.innerHTML = `<div class="pv"></div>`; c._pv = el.firstElementChild;
+    el.onclick = () => abrirEditor(i);
+    g.appendChild(el);
+  });
+  requestAnimationFrame(pintarGaleria);
+}
+
+/* ---------- editor ---------- */
+const CAMPOS = {
+  oferta: [['titulo', 'Título grande'], ['subtitulo', 'Frase na faixa'], ['moto']],
+  preco: [['titulo', 'Nome do modelo'], ['rotulo', 'Frase acima do preço'], ['valor', 'Valor (ex.: 299,90)'], ['complemento', 'Depois do valor (ex.: /mês, 48x)'], ['detalhe', 'Faixa branca embaixo'], ['moto']],
+  brinde: [['chamada', 'Faixa de cima'], ['titulo', 'Título'], ['brindes'], ['rodape_texto', 'Aviso embaixo'], ['moto']],
+  catalogo: [['titulo', 'Título'], ['texto', 'Texto da caixa', 'area'], ['motos']],
+  lancamento: [['titulo', 'Nome do modelo'], ['subtitulo', 'Frase na faixa'], ['moto'], ['cor']],
+  modelo: [['titulo', 'Nome do modelo'], ['texto', 'Texto da caixa', 'area'], ['moto']],
+  galeria: [['titulo', 'Nome do modelo'], ['moto']],
+  dica: [['chamada', 'Faixa de cima'], ['titulo', 'Título'], ['itens'], ['moto']],
+  whatsapp: [['titulo', 'Título grande'], ['subtitulo', 'Frase'], ['moto']],
+  apresentacao: [['chamada', 'Faixa de cima'], ['titulo', 'Título'], ['subtitulo', 'Cargo / frase'], ['texto', 'Texto da caixa', 'area'], ['moto']],
+  h_especialista: [['titulo', 'Título'], ['subtitulo', 'Subtítulo'], ['linha1', 'Faixa vermelha'], ['linha2', 'Faixa branca'], ['motos']],
+  h_modelo: [['titulo', 'Nome do modelo'], ['subtitulo', 'Destaque'], ['texto', 'Texto', 'area'], ['moto']],
+  h_sonho: [['livre'], ['linha1', 'Faixa'], ['titulo', 'Título grande'], ['subtitulo', 'Frase']],
+  h_celular: [['titulo', 'Título'], ['subtitulo', 'Frase'], ['moto']],
+  h_nome: [['titulo', 'Texto gigante (nome do modelo)'], ['texto', 'Frase de cima', 'area'], ['moto']],
+  h_consorcio1: [['titulo', 'Título', 'area'], ['subtitulo', 'Chamada'], ['motos']],
+  h_consorcio2: [['titulo', 'Título', 'area'], ['itens', 'Passos', 3], ['motos']],
+  h_card: [['titulo', 'Nome do modelo'], ['texto', 'Texto da caixa', 'area'], ['moto']],
+  y_especialista: [['titulo', 'Linha 1'], ['subtitulo', 'Linha 2'], ['itens', 'Formas de pagamento', 3], ['texto', 'Frase', 'area'], ['moto']],
+  y_nova: [['titulo', 'Texto gigante'], ['texto', 'Frase de cima', 'area'], ['moto']],
+  y_destaque: [['titulo', 'Nome do modelo'], ['subtitulo', 'Destaque'], ['itens', 'Características', 3], ['moto']],
+  y_gigante: [['titulo', 'Nome do modelo'], ['texto', 'Frase', 'area'], ['moto']],
+  y_esportiva: [['titulo', 'Nome do modelo'], ['texto', 'Frase', 'area'], ['moto']],
+  a_sonho: [['chamada', 'Frase de cima'], ['titulo', 'Título grande'], ['subtitulo', 'Modelo'], ['moto']],
+  a_parcelas: [['chamada', 'Selo'], ['titulo', 'Número grande'], ['texto', 'Texto da caixa', 'area'], ['vertical', 'Texto vertical'], ['moto']],
+  a_escolha: [['titulo', 'Título'], ['subtitulo', 'Pergunta'], ['motos']],
+  a_zero: [['titulo', 'Linha 1'], ['subtitulo', 'Linha 2 (destaque)'], ['selo', 'Selo'], ['motos']],
+  a_desempenho: [['titulo', 'Título'], ['vertical', 'Texto vertical (modelo)'], ['moto']],
+  a_tempo: [['chamada', 'Faixa laranja'], ['titulo', 'Título grande'], ['subtitulo', 'Frase'], ['moto']],
+  a_queridinha: [['subtitulo', 'Frase'], ['titulo', 'Nome do modelo (gigante)'], ['moto']],
+  a_linha: [['titulo', 'Nome do modelo'], ['subtitulo', 'Frase'], ['motos']],
+  u_oferta: [['titulo', 'Título grande'], ['subtitulo', 'Frase na faixa'], ['moto']],
+  u_preco: [['titulo', 'Nome do modelo'], ['rotulo', 'Frase acima do preço'], ['valor', 'Valor (ex.: 299,90)'], ['complemento', 'Depois do valor (ex.: /mês, 48x)'], ['detalhe', 'Faixa branca embaixo'], ['moto']],
+  u_brinde: [['chamada', 'Faixa de cima'], ['titulo', 'Título'], ['brindes'], ['rodape_texto', 'Aviso embaixo'], ['moto']],
+  u_catalogo: [['titulo', 'Título'], ['texto', 'Texto da caixa', 'area'], ['motos']],
+  u_gigante: [['titulo', 'Texto gigante (nome do modelo)'], ['texto', 'Frase de cima', 'area'], ['moto']],
+  u_card: [['titulo', 'Nome do modelo'], ['texto', 'Texto da caixa', 'area'], ['moto']],
+  u_sonho: [['livre'], ['linha1', 'Faixa'], ['titulo', 'Título grande'], ['subtitulo', 'Frase']],
+  u_celular: [['titulo', 'Título'], ['subtitulo', 'Frase'], ['moto']],
+  u_consorcio1: [['titulo', 'Título', 'area'], ['subtitulo', 'Chamada'], ['motos']],
+  u_consorcio2: [['titulo', 'Título', 'area'], ['itens', 'Passos', 3], ['motos']],
+  u_especialista: [['titulo', 'Linha 1'], ['subtitulo', 'Linha 2'], ['itens', 'Formas de pagamento', 3], ['texto', 'Frase', 'area'], ['moto']],
+  u_parcelas: [['chamada', 'Selo'], ['titulo', 'Número grande'], ['texto', 'Texto da caixa', 'area'], ['vertical', 'Texto vertical'], ['moto']],
+  u_chamada: [['chamada', 'Faixa colorida (opcional)'], ['titulo', 'Título grande'], ['subtitulo', 'Frase'], ['moto']],
+  u_dica: [['chamada', 'Faixa de cima'], ['titulo', 'Título'], ['itens'], ['moto']],
+  u_whatsapp: [['titulo', 'Título grande'], ['subtitulo', 'Frase'], ['moto']],
+  u_apresentacao: [['chamada', 'Faixa de cima'], ['titulo', 'Título'], ['subtitulo', 'Cargo / frase'], ['texto', 'Texto da caixa', 'area'], ['moto']],
+  u_destaque: [['titulo', 'Nome do modelo'], ['subtitulo', 'Destaque'], ['itens', 'Características', 3], ['moto']],
+};
+
+function abrirEditor(i) {
+  const c = cards()[i];
+  const box = $('#edCampos'); box.innerHTML = '';
+  const add = (html) => { const d = document.createElement('div'); d.innerHTML = html; box.appendChild(d); return d; };
+  const refresh = () => { pintar($('#edPv'), c, formatoEd); if (c._pv) pintar(c._pv, c); if (c.legenda == null) $('#edLeg').value = legenda(c); };
+  const lista = (k, label, n, ph) => {
+    c.p[k] = c.p[k] || [];
+    const d = add(`<label class="f">${label}</label>`);
+    for (let j = 0; j < n; j++) {
+      const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = ph[j] || ''; inp.value = c.p[k][j] || ''; inp.style.marginBottom = '6px';
+      inp.oninput = () => { c.p[k][j] = inp.value.trim(); refresh(); }; d.appendChild(inp);
+    }
+  };
+  CAMPOS[c.p.template].forEach(([k, label, tipo]) => {
+    if (k === 'moto' || k === 'motos') {
+      const d = add(`<label class="f">${k === 'motos' ? 'Fotos das motos (até 4)' : 'Foto da moto'}</label><div></div>`);
+      criarFotos(d.lastElementChild, { n: k === 'motos' ? 4 : 1, fotos: c.fotos, podeApagar: k === 'motos', onChange: () => {
+        c._fotoTrocada = true;
+        if (c.p.template === 'lancamento' && c.fotos[0]?.cor && !c._corManual) { c.cor = c.fotos[0].cor; const ci = box.querySelector('#edCor'); if (ci) ci.value = c.cor; }
+        refresh();
+      } });
+    } else if (k === 'brindes') lista('brindes', 'Brindes (até 3)', 3, ['Ex.: Capacete', 'Ex.: Tanque Cheio', 'Ex.: Emplacamento']);
+    else if (k === 'itens') { const n = typeof tipo === 'number' ? tipo : 4; lista('itens', n !== 4 ? label : 'Itens da lista (até 4)', n, ['Item 1', 'Item 2', 'Item 3', 'Item 4 (opcional)']); }
+    else if (k === 'livre') {
+      c.livres = c.livres || [];
+      const d = add(`<label class="f">Foto da entrega (cliente com a moto)</label><div></div>`);
+      criarFotos(d.lastElementChild, { n: 1, fotos: c.livres, max: 1400, rotulo: '+ Foto', dica: 'Use a foto do cliente recebendo a moto. O fundo é mantido.', removerPadrao: false, onChange: refresh });
+    }
+    else if (k === 'cor') {
+      const d = add(`<label class="f">Cor do título<input type="color" id="edCor" value="${c.cor || c.fotos[0]?.cor || loja.cor}"></label>`);
+      d.querySelector('input').oninput = (e) => { c.cor = e.target.value; c._corManual = true; refresh(); };
+    } else {
+      const d = add(`<label class="f">${esc(label)}${tipo === 'area' ? '<textarea></textarea><div class="hint">Use *asteriscos* para deixar em negrito.</div>' : '<input type="text">'}</label>`);
+      const inp = d.querySelector('input,textarea'); inp.value = txt(c, k) || '';
+      inp.oninput = () => { c.p[k] = inp.value; refresh(); };
+    }
+  });
+  if (COM_PESSOA[modo].includes(c.p.template)) {
+    const d = add(`<label class="chkl"><input type="checkbox" ${c.semPessoa ? '' : 'checked'}> Mostrar minha foto nesta arte</label>`);
+    d.querySelector('input').onchange = (e) => { c.semPessoa = !e.target.checked; refresh(); };
+  }
+  const dl = add(`<label class="f">Legenda do post<textarea id="edLeg" style="min-height:140px"></textarea></label>`);
+  const leg = dl.querySelector('textarea'); leg.value = legenda(c);
+  leg.oninput = () => { c.legenda = leg.value; };
+  const ac = add(`<div class="acoes"><button class="btn sec" id="edCopiar">Copiar legenda</button><button class="btn pri" id="edBaixar">Baixar esta arte</button></div>`);
+  ac.style.marginTop = 'auto';
+  ac.querySelector('#edCopiar').onclick = async () => { try { await navigator.clipboard.writeText(legenda(c)); toast('Legenda copiada!'); } catch { toast('Selecione o texto da legenda e copie'); } };
+  ac.querySelector('#edBaixar').onclick = async (e) => {
+    const b = e.target; b.disabled = true; b.textContent = 'Gerando…';
+    try { await salvar(await renderPost(dadosDe(c), postP(c), formatoEd), `${slug(loja.nome)}-${slug(c.nome || NOMES[c.p.template])}-${formatoEd}.jpg`); }
+    catch (err) { console.error(err); toast('Não foi possível gerar a imagem'); }
+    finally { b.disabled = false; marcarFormato(); }
+  };
+  formatoEd = 'feed'; edAtual = c; marcarFormato();
+  $('#modal').classList.add('on'); document.querySelector('.ed').scrollTop = 0; box.scrollTop = 0;
+  requestAnimationFrame(() => pintar($('#edPv'), c, formatoEd));
+}
+let formatoEd = 'feed', edAtual = null;
+function marcarFormato() { document.querySelectorAll('#formato button').forEach((b) => b.classList.toggle('on', b.dataset.f === formatoEd)); $('#edBaixar') && ($('#edBaixar').textContent = formatoEd === 'story' ? 'Baixar story' : 'Baixar post do feed'); }
+$('#formato').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || !edAtual) return;
+  formatoEd = b.dataset.f; marcarFormato(); pintar($('#edPv'), edAtual, formatoEd);
+});
+function fechar() { $('#modal').classList.remove('on'); }
+$('#voltar').onclick = fechar;
+$('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') fechar(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') fechar(); });
+
+/* ---------- downloads ---------- */
+const slug = (s) => (s || 'arte').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+let downloadsP = null;
+try { if (window.claude?.use) downloadsP = window.claude.use('downloads'); } catch (e) {}
+async function salvar(blob, filename) {
+  const dl = downloadsP && (await downloadsP.catch(() => null));
+  if (dl) {
+    try { await dl.save({ filename, data: blob }); toast('Download feito!'); return; }
+    catch (e) { if (e?.code === 'declined') return; }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+}
+/* ---------- início ---------- */
+(async () => {
+  montarBandeiras(); bindDados();
+  for (const k of ['acai', 'jet', 'scooter']) {
+    const url = await fileToDataURL(await (await fetch(`assets/moto_${k}.png`)).blob());
+    const i = await loadImg(url), cv = document.createElement('canvas'); cv.width = i.width; cv.height = i.height; cv.getContext('2d').drawImage(i, 0, 0);
+    DEMO[k] = { url, cor: corDominante(cv), original: url, remover: false, tol: 30, status: 'transparente' };
+  }
+  await carregarMotosMarca();
+  await document.fonts.load('900 40px Montserrat'); await document.fonts.load('40px Anton'); await document.fonts.load('italic 800 40px Montserrat');
+})();
+
+</script>
+</body>
+</html>
