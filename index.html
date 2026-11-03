@@ -1010,7 +1010,21 @@ function pe(d, L, tom) {
 }
 
 /* ---------- fundos (todos usam a cor da bandeira) ---------- */
+// fotos reais de fundo (carregadas como data URL pelo app)
+const FUNDOS_FOTO = {};
+const FOTO_DO_TIPO = { noite: 'noite', ceu: 'estrada', marca: 'por-do-sol', cor: 'floresta', cidade: 'chuva' };
+function fundoFoto(d, tipo) {
+  const f = FUNDOS_FOTO[FOTO_DO_TIPO[tipo]]; if (!f) return null;
+  const C = d.loja.cor, CE = shade(C, -.45), img = `<div class="bg" style="background:url('${f}') center/cover"></div>`;
+  if (tipo === 'noite') return img + `<div class="bg" style="background:linear-gradient(180deg,rgba(4,8,20,.72) 0%,rgba(4,8,20,.25) 38%,rgba(4,8,20,.2) 60%,rgba(4,8,20,.65) 100%)"></div>`;
+  if (tipo === 'ceu') return img + `<div class="bg" style="background:linear-gradient(180deg,rgba(0,20,50,.45) 0%,rgba(0,20,50,.05) 40%,rgba(0,0,0,0) 70%,rgba(0,0,0,.25) 100%)"></div>`;
+  if (tipo === 'cidade') return img + `<div class="bg" style="background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(0,0,0,.25))"></div>`;
+  // marca / cor: foto com a cor da bandeira por cima
+  const op = tipo === 'cor' ? .82 : .7;
+  return img + `<div class="bg" style="background:linear-gradient(165deg, ${shade(C, .05)} 0%, ${C} 45%, ${CE} 100%);opacity:${op}"></div>`;
+}
 function fundoU(d, tipo, seed = 7) {
+  const foto = fundoFoto(d, tipo); if (foto) return foto;
   const C = d.loja.cor, CE = shade(C, -.45);
   const riscos = (sd, cor, op) => { const r = rng(sd); let s = ''; for (let i = 0; i < 26; i++) { const y = r() * 1440, x = r() * 1080, l = 200 + r() * 700, w = 1 + r() * 5; s += `<line x1="${x.toFixed(0)}" y1="${y.toFixed(0)}" x2="${(x + l).toFixed(0)}" y2="${(y - l * .35).toFixed(0)}" stroke="${cor}" stroke-width="${w.toFixed(1)}" opacity="${(op * (.3 + r() * .7)).toFixed(2)}" stroke-linecap="round"/>`; } return `<svg class="bg" viewBox="0 0 1080 1440" preserveAspectRatio="none">${s}</svg>`; };
   if (tipo === 'noite') return fundo('noite', seed);
@@ -1030,7 +1044,11 @@ const faixas = (d, L, y) => `<svg style="position:absolute;left:0;top:${y}px;wid
   <defs><linearGradient id="fx" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${d.loja.cor}" stop-opacity="0"/><stop offset=".55" stop-color="${d.loja.cor}" stop-opacity=".9"/><stop offset="1" stop-color="${shade(d.loja.cor, -.3)}"/></linearGradient></defs>
   <polygon points="560,180 1080,0 1080,140 640,310" fill="url(#fx)"/><polygon points="610,340 1080,180 1080,260 680,420" fill="url(#fx)" opacity=".7"/></svg>`;
 const tagU = (d, txt, fs, cor, txtCor = '#fff') => `<span style="display:inline-block;background:${cor || d.loja.cor};color:${txtCor};font-weight:800;font-size:${fs}px;padding:10px 26px 12px;border-radius:8px;line-height:1.1;box-shadow:0 8px 20px rgba(0,0,0,.25)">${esc(txt)}</span>`;
-const motoU = (m, x, yTop, w, h, z = 4, pos = 'center bottom') => imgM(m, `left:${px(x)};top:${px(yTop)};width:${px(w)};height:${px(h)};object-position:${pos};z-index:${z}`);
+const motoU = (m, x, yTop, w, h, z = 4, pos = 'center bottom') => {
+  const sx = pos.startsWith('left') ? x + w * .04 : pos.startsWith('right') ? x + w * .2 : x + w * .12;
+  const sombraChao = `<div style="position:absolute;left:${px(sx)};top:${px(yTop + h - 40)};width:${px(w * .76)};height:70px;background:radial-gradient(ellipse at center, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 45%, transparent 72%);z-index:${z - 1};pointer-events:none"></div>`;
+  return (m && m.foto ? sombraChao : '') + imgM(m, `left:${px(x)};top:${px(yTop)};width:${px(w)};height:${px(h)};object-position:${pos};z-index:${z}`);
+};
 // pessoa ancorada na base (acima do rodapé)
 const pessoaU = (d, ladoEsq, b, h, maxW, z = 6) => pessoa(d, `${ladoEsq ? 'left:-30px' : 'right:-30px'};bottom:${px(b)};height:${px(h)};max-width:${px(maxW)};object-position:${ladoEsq ? 'left' : 'right'} bottom;z-index:${z}`);
 
@@ -1124,7 +1142,7 @@ Object.assign(TEMPLATES, {
     const t = topoY(d, L), b = baseY(d, L), X = L.v(0, 240), H = L.H, C = d.loja.cor;
     const ph = 1000 + X * .9, py = t - 10;
     return postU(d, L, 'cidade', `
-      <div style="position:absolute;left:330px;width:420px;top:0;bottom:0;background:linear-gradient(180deg,${C},${shade(C, -.25)})"></div>
+      <div style="position:absolute;left:330px;width:420px;top:0;bottom:0;background:linear-gradient(180deg,${C},${shade(C, -.25)});opacity:${FUNDOS_FOTO.chuva ? .85 : 1}"></div>
       <div style="position:absolute;left:250px;width:580px;top:${py}px;height:${ph}px;border-radius:78px;background:#0f1013;padding:18px;box-shadow:0 40px 70px rgba(0,0,0,.4);z-index:3">
         <div style="width:100%;height:100%;border-radius:62px;overflow:hidden;position:relative;background:linear-gradient(180deg,#2b2d33,#5a5d66 55%,#c9ccd3)">
           <div style="position:absolute;left:50%;top:18px;width:150px;height:38px;border-radius:30px;background:#0f1013;transform:translateX(-50%)"></div>
@@ -1748,6 +1766,7 @@ async function salvar(blob, filename) {
     const i = await loadImg(url), cv = document.createElement('canvas'); cv.width = i.width; cv.height = i.height; cv.getContext('2d').drawImage(i, 0, 0);
     DEMO[k] = { url, cor: corDominante(cv), original: url, remover: false, tol: 30, status: 'transparente' };
   }
+  await Promise.all(['noite', 'estrada', 'por-do-sol', 'floresta', 'chuva'].map(async (n) => { try { FUNDOS_FOTO[n] = await urlParaData(`assets/fundos/${n}.jpg`); } catch (e) {} }));
   await carregarMotosMarca();
   await document.fonts.load('900 40px Montserrat'); await document.fonts.load('40px Anton'); await document.fonts.load('italic 800 40px Montserrat');
 })();
